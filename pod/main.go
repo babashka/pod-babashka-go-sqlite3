@@ -118,7 +118,11 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 			return nil, err
 		}
 
-		conn, _ := sql.Open("sqlite3", db)
+		conn, err := sql.Open("sqlite3", db)
+		if err != nil {
+			return nil, err
+		}
+
 		defer conn.Close()
 
 		args := makeArgs(query)
