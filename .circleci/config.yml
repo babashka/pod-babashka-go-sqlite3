@@ -10,6 +10,9 @@ jobs:
           keys:
             - pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
+          name: Is sqlite installed?
+          command: sqlite --version
+      - run:
           name: Build linux binary
           command: go build -o linux-amd64/pod-babashka-sqlite3 main.go
       - run:
