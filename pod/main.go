@@ -126,8 +126,11 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 			log.Printf("json args %q", q)
 			conn, _ := sql.Open("sqlite3", q.Database)
 			defer conn.Close()
-
-			res, err := conn.Exec(q.Query[0], q.Query[1:])
+			args := make([]interface{}, len(q.Query) - 1)
+			for i := range q.Query[1:] {
+				args[i] = q.Query[i + 1]
+			}
+			res, err := conn.Exec(q.Query[0], args...)
 			if err != nil {
 				return nil, err
 			}
@@ -142,8 +145,11 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 			log.Printf("json args %q", q)
 			conn, _ := sql.Open("sqlite3", q.Database)
 			defer conn.Close()
-
-			res, err := conn.Query(q.Query[0], q.Query[1:])
+			args := make([]interface{}, len(q.Query) - 1)
+			for i := range q.Query[1:] {
+				args[i] = q.Query[i + 1]
+			}
+			res, err := conn.Query(q.Query[0], args...)
 			if err != nil {
 				return nil, err
 			}
