@@ -2,7 +2,6 @@ package babashka
 
 import (
 	"bufio"
-	"encoding/json"
 	"os"
 
 	"github.com/jackpal/bencode-go"
@@ -57,18 +56,10 @@ func WriteDescribeResponse(describeResponse *DescribeResponse) {
 	writeResponse(*describeResponse)
 }
 
-func WriteInvokeResponse(inputMessage *Message, value interface{}) error {
-	if value == nil {
-		return nil
-	}
-	resultValue, err := json.Marshal(value)
-	if err != nil {
-		return err
-	}
-	response := InvokeResponse{Id: inputMessage.Id, Status: []string{"done"}, Value: string(resultValue)}
-	writeResponse(response)
+func WriteInvokeResponse(inputMessage *Message, value string) error {
+	response := InvokeResponse{Id: inputMessage.Id, Status: []string{"done"}, Value: value}
 
-	return nil
+	return writeResponse(response)
 }
 
 func WriteErrorResponse(inputMessage *Message, err error) {

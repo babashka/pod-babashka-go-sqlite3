@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+
 	"github.com/babashka/pod-babashka-sqlite3/babashka"
 	"github.com/babashka/pod-babashka-sqlite3/pod"
 )
@@ -24,6 +26,11 @@ func main() {
 			babashka.WriteDescribeResponse(describeRes)
 			continue
 		}
-		babashka.WriteInvokeResponse(message, res)
+
+		if json, err := json.Marshal(res); err != nil {
+			babashka.WriteErrorResponse(message, err)
+		} else {
+			babashka.WriteInvokeResponse(message, string(json))
+		}
 	}
 }
