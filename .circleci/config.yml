@@ -44,7 +44,6 @@ jobs:
             mkdir release
 
             zip -j "release/pod-babashka-sqlite3-$VERSION-linux-amd64.zip" linux-amd64/pod-babashka-sqlite3
-            zip -j "release/fiddle-$VERSION-linux-amd64.zip" fiddle
             zip -j "release/pod-babashka-sqlite3-$VERSION-macos-amd64.zip" macos-amd64/pod-babashka-sqlite3
             zip -j "release/pod-babashka-sqlite3-$VERSION-windows-amd64.zip" windows-amd64/pod-babashka-sqlite3.exe
       - store_artifacts:
