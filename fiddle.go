@@ -29,11 +29,16 @@ func execQuery(query string, exec bool, args ...string) {
 		Id:  "123",
 		Args: fmt.Sprintf(`{"db":"/tmp/pod.db",
                         "query": %s}`, q)}
-	res, err := pod.ProcessMessage(message)
+	jsonable, err := pod.ProcessMessage(message)
 	if err != nil {
 		log.Println("err", err)
 	}
-	log.Println("res", res)
+	log.Println("jsonable", jsonable)
+	json, err := json.Marshal(jsonable)
+	if err != nil {
+		panic("error")
+	}
+	log.Println("json", string(json))
 }
 
 func main() {
