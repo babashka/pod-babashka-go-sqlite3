@@ -37,22 +37,24 @@ jobs:
           name: Test fiddle
           command: |
               go run fiddle.go
+              go build -o fiddle fiddle.go
       - save_cache:
           key: pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
           paths:
             - "/go/pkg/mod"
-      # - run:
-      #     name: Release
-      #     command: |
-      #       VERSION=$(cat resources/POD_BABASHKA_FSWATCHER_VERSION)
-      #       mkdir release
+      - run:
+          name: Release
+          command: |
+            VERSION=$(cat resources/POD_BABASHKA_SQLITE3_VERSION)
+            mkdir release
 
-      #       zip -j "release/pod-babashka-fswatcher-$VERSION-linux-amd64.zip" linux-amd64/pod-babashka-fswatcher
-      #       zip -j "release/pod-babashka-fswatcher-$VERSION-macos-amd64.zip" macos-amd64/pod-babashka-fswatcher
-      #       zip -j "release/pod-babashka-fswatcher-$VERSION-windows-amd64.zip" windows-amd64/pod-babashka-fswatcher.exe
-      # - store_artifacts:
-      #     path: release
-      #     destination: release
+            zip -j "release/pod-babashka-sqlite3-$VERSION-linux-amd64.zip" linux-amd64/pod-babashka-sqlite3
+            zip -j "release/fiddle-$VERSION-linux-amd64.zip" fiddle
+            zip -j "release/pod-babashka-sqlite3-$VERSION-macos-amd64.zip" macos-amd64/pod-babashka-sqlite3
+            zip -j "release/pod-babashka-sqlite3-$VERSION-windows-amd64.zip" windows-amd64/pod-babashka-sqlite3.exe
+      - store_artifacts:
+          path: release
+          destination: release
 
 workflows:
   version: 2
