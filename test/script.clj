@@ -11,14 +11,23 @@
 
 (.delete (io/file "/tmp/foo.db"))
 
-(prn (sqlite/execute! "/tmp/foo.db" ["create table if not exists foo (the_text TEXT, the_int INTEGER, the_real REAL)"]))
+(prn (sqlite/execute! "/tmp/foo.db" ["create table if not exists foo (the_text TEXT, the_int INTEGER, the_real REAL, the_blob BLOB)"]))
 (prn (sqlite/execute! "/tmp/foo.db" ["delete from foo"]))
-(prn (sqlite/execute! "/tmp/foo.db" ["insert into foo (the_text, the_int, the_real) values (?,?,?)" "foo" 1 3.14]))
-(def results (sqlite/query!   "/tmp/foo.db" ["select * from foo"]))
-(prn results)
+
+(def png (java.nio.file.Files/readAllBytes (.toPath (io/file "resources/babashka.png"))))
+
+(prn (sqlite/execute! "/tmp/foo.db" ["insert into foo (the_text, the_int, the_real, the_blob) values (?,?,?,?)" "foo" 1 3.14 png]))
+
+(def results (sqlite/query! "/tmp/foo.db" ["select * from foo"]))
+
+(def results-min-png (update results 0 #(dissoc % :the_blob)))
+(prn results-min-png)
 
 (deftest results-test
-  (is (= [{:the_int 1, :the_real 3.14, :the_text "foo"}] results)))
+  (is (= [{:the_int 1, :the_real 3.14, :the_text "foo"}] results-min-png)))
+
+;; TODO:
+(prn (count png) (count (get-in results [0 :the_blob])))
 
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))
