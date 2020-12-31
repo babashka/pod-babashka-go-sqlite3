@@ -1,24 +1,27 @@
 package pod
 
 import (
+	"container/list"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-
 	"github.com/babashka/pod-babashka-sqlite3/babashka"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
+	"github.com/russolsen/transit"
+	"strings"
+	_ "reflect"
 )
 
-type ExecResult struct {
-	RowsAffected   int64 `json:"rows-affected"`
-	LastInsertedId int64 `json:"last-inserted-id"`
-}
-
-func JsonifyRows(rows *sql.Rows) ([]interface{}, error) {
-	columns, err := rows.Columns()
+func encodeRows(rows *sql.Rows) ([]interface{}, error) {
+	cols, err := rows.Columns()
+	columns := make([]transit.Keyword, len(cols))
+	for i, col := range cols {
+		columns[i] = transit.Keyword(col)
+	}
 	if err != nil {
 		return nil, err
 	}
+
+	var data []interface{}
 
 	values := make([]interface{}, len(columns))
 	scanArgs := make([]interface{}, len(values))
@@ -26,31 +29,32 @@ func JsonifyRows(rows *sql.Rows) ([]interface{}, error) {
 		scanArgs[i] = &values[i]
 	}
 
-	c := 0
-	results := make(map[string]interface{})
-	var data []interface{}
-
 	for rows.Next() {
-		if c > 0 {
-			data = append(data, ",")
-		}
+
+		results := make(map[transit.Keyword]interface{})
 
 		if err = rows.Scan(scanArgs...); err != nil {
+			Debug(err)
 			return nil, err
 		}
 
-		for i, value := range values {
-			results[columns[i]] = value
+		for i, val := range values {
+			col := columns[i]
+			results[col] = val
 		}
 
+		// Debug(results)
+		// Debug(reflect.TypeOf(results))
+
 		data = append(data, results)
-		c++
 	}
 
 	return data, nil
 }
 
-func JsonifyResult(result sql.Result) (*ExecResult, error) {
+type ExecResult = map[transit.Keyword]int64
+
+func encodeResult(result sql.Result) (ExecResult, error) {
 	rowsAffected, err := result.RowsAffected()
 	lastInsertedId, err := result.LastInsertId()
 
@@ -58,27 +62,41 @@ func JsonifyResult(result sql.Result) (*ExecResult, error) {
 		return nil, err
 	}
 
-	return &ExecResult{
-		RowsAffected:   rowsAffected,
-		LastInsertedId: lastInsertedId,
-	}, nil
+	res := ExecResult{
+		transit.Keyword("rows-affected"):    rowsAffected,
+		transit.Keyword("last-inserted-id"): lastInsertedId,
+	}
+	return res, nil
+}
+
+func listToSlice(l *list.List) []interface{} {
+	slice := make([]interface{}, l.Len())
+	cnt := 0
+	for e := l.Front(); e != nil; e = e.Next() {
+		slice[cnt] = e.Value
+		cnt++
+	}
+	return slice
 }
 
 func parseQuery(args string) (string, string, []interface{}, error) {
-	podArgs := []json.RawMessage{}
-	if err := json.Unmarshal([]byte(args), &podArgs); err != nil {
+	reader := strings.NewReader(args)
+	decoder := transit.NewDecoder(reader)
+	value, err := decoder.Decode()
+
+	if err != nil {
 		return "", "", nil, err
 	}
+	var theList *list.List
+	theList = value.(*list.List)
+	theSlice := listToSlice(theList)
 
 	var db string
-	if err := json.Unmarshal(podArgs[0], &db); err != nil {
-		return "", "", nil, err
-	}
+	db = theSlice[0].(string)
+	// println("db", db)
 
 	var queryArgs []interface{}
-	if err := json.Unmarshal(podArgs[1], &queryArgs); err != nil {
-		return "", "", nil, err
-	}
+	queryArgs = theSlice[1].([]interface{})
 
 	var query string
 	query = queryArgs[0].(string)
@@ -100,7 +118,7 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 	switch message.Op {
 	case "describe":
 		return &babashka.DescribeResponse{
-			Format: "json",
+			Format: "transit+json",
 			Namespaces: []babashka.Namespace{
 				{
 					Name: "pod.babashka.sqlite3",
@@ -128,8 +146,6 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 
 		defer conn.Close()
 
-		//args := makeArgs(query)
-
 		switch message.Var {
 		case "pod.babashka.sqlite3/execute!":
 			res, err := conn.Exec(query, args...)
@@ -137,7 +153,7 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 				return nil, err
 			}
 
-			if json, err := JsonifyResult(res); err != nil {
+			if json, err := encodeResult(res); err != nil {
 				return nil, err
 			} else {
 				return json, nil
@@ -148,7 +164,7 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 				return nil, err
 			}
 
-			if json, err := JsonifyRows(res); err != nil {
+			if json, err := encodeRows(res); err != nil {
 				return nil, err
 			} else {
 				return json, nil

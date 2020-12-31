@@ -1,10 +1,10 @@
 package main
 
 import (
-	"encoding/json"
-
+	"bytes"
 	"github.com/babashka/pod-babashka-sqlite3/babashka"
 	"github.com/babashka/pod-babashka-sqlite3/pod"
+	"github.com/russolsen/transit"
 )
 
 func main() {
@@ -27,10 +27,13 @@ func main() {
 			continue
 		}
 
-		if json, err := json.Marshal(res); err != nil {
+		buf := bytes.NewBufferString("")
+		encoder := transit.NewEncoder(buf, false)
+		if err := encoder.Encode(res); err != nil {
 			babashka.WriteErrorResponse(message, err)
 		} else {
-			babashka.WriteInvokeResponse(message, string(json))
+			//println("buf", buf.String())
+			babashka.WriteInvokeResponse(message, string(buf.String()))
 		}
 	}
 }
