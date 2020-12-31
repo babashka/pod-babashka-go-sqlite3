@@ -39,5 +39,10 @@
 (deftest bytes-roundtrip
   (is (= (count png) (count (get-in results [0 :the_blob])))))
 
+(deftest error-test
+  (is (thrown-with-msg?
+       Exception #"no such column: non_existing"
+       (sqlite/query "/tmp/foo.db" ["select non_existing from foo"]))))
+
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))

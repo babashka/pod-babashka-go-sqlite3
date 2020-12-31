@@ -15,7 +15,7 @@ import (
 )
 
 func debug(v interface{}) {
-	fmt.Fprintf(os.Stderr, "debug: %+v\n", v)
+	fmt.Fprintf(os.Stderr, "debug: %+q\n", v)
 }
 
 func encodeRows(rows *sql.Rows) ([]interface{}, error) {
@@ -62,6 +62,9 @@ type ExecResult = map[transit.Keyword]int64
 
 func encodeResult(result sql.Result) (ExecResult, error) {
 	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
 	lastInsertedId, err := result.LastInsertId()
 
 	if err != nil {
@@ -147,11 +150,13 @@ func processMessage(message *babashka.Message) {
 		db, query, args, err := parseQuery(message.Args)
 		if err != nil {
 			babashka.WriteErrorResponse(message, err)
+			return
 		}
 
 		conn, err := sql.Open("sqlite3", db)
 		if err != nil {
 			babashka.WriteErrorResponse(message, err)
+			return
 		}
 
 		defer conn.Close()
@@ -161,10 +166,11 @@ func processMessage(message *babashka.Message) {
 			res, err := conn.Exec(query, args...)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
+				return
 			}
-
 			if json, err := encodeResult(res); err != nil {
 				babashka.WriteErrorResponse(message, err)
+				return
 			} else {
 				respond(message, json)
 			}
@@ -172,18 +178,22 @@ func processMessage(message *babashka.Message) {
 			res, err := conn.Query(query, args...)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
+				return
 			}
 
 			if json, err := encodeRows(res); err != nil {
 				babashka.WriteErrorResponse(message, err)
+				return
 			} else {
 				respond(message, json)
 			}
 		default:
 			babashka.WriteErrorResponse(message, fmt.Errorf("Unknown var %s", message.Var))
+			return
 		}
 	default:
 		babashka.WriteErrorResponse(message, fmt.Errorf("Unknown op %s", message.Op))
+		return
 	}
 }
 
