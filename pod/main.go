@@ -2,11 +2,13 @@ package pod
 
 import (
 	"database/sql"
-	"encoding/json"
+	_ "encoding/json"
+	"github.com/russolsen/transit"
 	"fmt"
-
 	"github.com/babashka/pod-babashka-sqlite3/babashka"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
+	"strings"
+	"os"
 )
 
 type ExecResult struct {
@@ -65,25 +67,26 @@ func JsonifyResult(result sql.Result) (*ExecResult, error) {
 }
 
 func parseQuery(args string) (string, string, []interface{}, error) {
-	podArgs := []json.RawMessage{}
-	if err := json.Unmarshal([]byte(args), &podArgs); err != nil {
+	reader := strings.NewReader(args)
+	decoder := transit.NewDecoder(reader)
+	value, err := decoder.Decode()
+
+	fmt.Fprintf(os.Stderr, "The value read is: %v\n", value)
+	if err != nil {
 		return "", "", nil, err
 	}
+	return "", "", nil, nil
+	// var db string
 
-	var db string
-	if err := json.Unmarshal(podArgs[0], &db); err != nil {
-		return "", "", nil, err
-	}
+	// var queryArgs []interface{}
+	// if err := json.Unmarshal(podArgs[1], &queryArgs); err != nil {
+	// 	return "", "", nil, err
+	// }
 
-	var queryArgs []interface{}
-	if err := json.Unmarshal(podArgs[1], &queryArgs); err != nil {
-		return "", "", nil, err
-	}
+	// var query string
+	// query = queryArgs[0].(string)
 
-	var query string
-	query = queryArgs[0].(string)
-
-	return db, query, queryArgs[1:], nil
+	// return db, query, queryArgs[1:], nil
 }
 
 func makeArgs(query []string) []interface{} {
@@ -100,7 +103,7 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 	switch message.Op {
 	case "describe":
 		return &babashka.DescribeResponse{
-			Format: "json",
+			Format: "transit+json",
 			Namespaces: []babashka.Namespace{
 				{
 					Name: "pod.babashka.sqlite3",
