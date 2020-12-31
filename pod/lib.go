@@ -4,10 +4,11 @@ import (
 	"container/list"
 	"database/sql"
 	"fmt"
-	"strings"
 	"github.com/babashka/pod-babashka-sqlite3/babashka"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 	"github.com/russolsen/transit"
+	"strings"
+	_ "reflect"
 )
 
 func encodeRows(rows *sql.Rows) ([]interface{}, error) {
@@ -20,23 +21,30 @@ func encodeRows(rows *sql.Rows) ([]interface{}, error) {
 		return nil, err
 	}
 
+	var data []interface{}
+
 	values := make([]interface{}, len(columns))
 	scanArgs := make([]interface{}, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
-	results := make(map[transit.Keyword]interface{})
-	var data []interface{}
-
 	for rows.Next() {
+
+		results := make(map[transit.Keyword]interface{})
+
 		if err = rows.Scan(scanArgs...); err != nil {
+			Debug(err)
 			return nil, err
 		}
 
-		for i, value := range values {
-			results[columns[i]] = value
+		for i, val := range values {
+			col := columns[i]
+			results[col] = val
 		}
+
+		// Debug(results)
+		// Debug(reflect.TypeOf(results))
 
 		data = append(data, results)
 	}
