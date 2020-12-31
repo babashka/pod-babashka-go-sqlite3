@@ -9,6 +9,7 @@ import (
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 	"strings"
 	"os"
+	"container/list"
 )
 
 type ExecResult struct {
@@ -71,7 +72,10 @@ func parseQuery(args string) (string, string, []interface{}, error) {
 	decoder := transit.NewDecoder(reader)
 	value, err := decoder.Decode()
 
-	fmt.Fprintf(os.Stderr, "The value read is: %v\n", value)
+	var theList *list.List
+	theList = value.(*list.List)
+	front := theList.Front()
+	fmt.Fprintf(os.Stderr, "The value read is: %+v\n", front.Value)
 	if err != nil {
 		return "", "", nil, err
 	}
