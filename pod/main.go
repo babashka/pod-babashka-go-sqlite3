@@ -64,23 +64,26 @@ func JsonifyResult(result sql.Result) (*ExecResult, error) {
 	}, nil
 }
 
-func parseQuery(args string) (string, []string, error) {
+func parseQuery(args string) (string, string, []interface{}, error) {
 	podArgs := []json.RawMessage{}
 	if err := json.Unmarshal([]byte(args), &podArgs); err != nil {
-		return "", []string{}, err
+		return "", "", nil, err
 	}
 
 	var db string
 	if err := json.Unmarshal(podArgs[0], &db); err != nil {
-		return "", []string{}, err
+		return "", "", nil, err
 	}
 
-	var query []string
-	if err := json.Unmarshal(podArgs[1], &query); err != nil {
-		return "", []string{}, err
+	var queryArgs []interface{}
+	if err := json.Unmarshal(podArgs[1], &queryArgs); err != nil {
+		return "", "", nil, err
 	}
 
-	return db, query, nil
+	var query string
+	query = queryArgs[0].(string)
+
+	return db, query, queryArgs[1:], nil
 }
 
 func makeArgs(query []string) []interface{} {
@@ -113,7 +116,7 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 			},
 		}, nil
 	case "invoke":
-		db, query, err := parseQuery(message.Args)
+		db, query, args, err := parseQuery(message.Args)
 		if err != nil {
 			return nil, err
 		}
@@ -125,11 +128,11 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 
 		defer conn.Close()
 
-		args := makeArgs(query)
+		//args := makeArgs(query)
 
 		switch message.Var {
 		case "pod.babashka.sqlite3/execute!":
-			res, err := conn.Exec(query[0], args...)
+			res, err := conn.Exec(query, args...)
 			if err != nil {
 				return nil, err
 			}
@@ -140,7 +143,7 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 				return json, nil
 			}
 		case "pod.babashka.sqlite3/query!":
-			res, err := conn.Query(query[0], args...)
+			res, err := conn.Query(query, args...)
 			if err != nil {
 				return nil, err
 			}

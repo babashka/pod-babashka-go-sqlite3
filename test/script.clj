@@ -13,7 +13,7 @@
 
 (prn (sqlite/execute! "/tmp/foo.db" ["create table if not exists foo (the_text TEXT, the_int INTEGER, the_real REAL)"]))
 (prn (sqlite/execute! "/tmp/foo.db" ["delete from foo"]))
-(prn (sqlite/execute! "/tmp/foo.db" ["insert into foo (the_text, the_int, the_real) values (?,?,?)" "foo" "1" "3.14"]))
+(prn (sqlite/execute! "/tmp/foo.db" ["insert into foo (the_text, the_int, the_real) values (?,?,?)" "foo" 1 3.14]))
 (def results (sqlite/query!   "/tmp/foo.db" ["select * from foo"]))
 (prn results)
 
