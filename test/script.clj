@@ -20,14 +20,14 @@
 
 (def results (sqlite/query! "/tmp/foo.db" ["select * from foo"]))
 
-(def results-min-png (update results 0 #(dissoc % :the_blob)))
+(def results-min-png (update results 0 #(dissoc % "the_blob")))
 (prn results-min-png)
 
 (deftest results-test
   (is (= [{:the_int 1, :the_real 3.14, :the_text "foo"}] results-min-png)))
 
 ;; TODO:
-(prn (count png) (count (get-in results [0 :the_blob])))
+(prn (count png) (count (get-in results [0 "the_blob"])))
 
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))

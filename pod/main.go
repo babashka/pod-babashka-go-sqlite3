@@ -1,15 +1,14 @@
 package pod
 
 import (
+	"container/list"
 	"database/sql"
-	_ "encoding/json"
-	"github.com/russolsen/transit"
 	"fmt"
 	"github.com/babashka/pod-babashka-sqlite3/babashka"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
-	"strings"
+	"github.com/russolsen/transit"
 	"os"
-	"container/list"
+	"strings"
 )
 
 type ExecResult struct {
@@ -17,7 +16,7 @@ type ExecResult struct {
 	LastInsertedId int64 `json:"last-inserted-id"`
 }
 
-func JsonifyRows(rows *sql.Rows) ([]interface{}, error) {
+func encodeRows(rows *sql.Rows) ([]interface{}, error) {
 	columns, err := rows.Columns()
 	if err != nil {
 		return nil, err
@@ -53,7 +52,7 @@ func JsonifyRows(rows *sql.Rows) ([]interface{}, error) {
 	return data, nil
 }
 
-func JsonifyResult(result sql.Result) (*ExecResult, error) {
+func encodeResult(result sql.Result) (*ExecResult, error) {
 	rowsAffected, err := result.RowsAffected()
 	lastInsertedId, err := result.LastInsertId()
 
@@ -67,30 +66,44 @@ func JsonifyResult(result sql.Result) (*ExecResult, error) {
 	}, nil
 }
 
+func debug(v interface{}) {
+	fmt.Fprintf(os.Stderr, "debug: %+v\n", v)
+}
+
+func listToSlice(l *list.List) []interface{} {
+	var slice []interface{}
+	slice = make([]interface{}, l.Len())
+	cnt := 0
+	for e := l.Front(); e != nil; e = e.Next() {
+		slice[cnt] = e.Value
+		cnt++
+	}
+	return slice
+}
+
 func parseQuery(args string) (string, string, []interface{}, error) {
 	reader := strings.NewReader(args)
 	decoder := transit.NewDecoder(reader)
 	value, err := decoder.Decode()
 
-	var theList *list.List
-	theList = value.(*list.List)
-	front := theList.Front()
-	fmt.Fprintf(os.Stderr, "The value read is: %+v\n", front.Value)
 	if err != nil {
 		return "", "", nil, err
 	}
-	return "", "", nil, nil
-	// var db string
+	var theList *list.List
+	theList = value.(*list.List)
+	theSlice := listToSlice(theList)
 
-	// var queryArgs []interface{}
-	// if err := json.Unmarshal(podArgs[1], &queryArgs); err != nil {
-	// 	return "", "", nil, err
-	// }
+	var db string
+	db = theSlice[0].(string)
+	// println("db", db)
 
-	// var query string
-	// query = queryArgs[0].(string)
+	var queryArgs []interface{}
+	queryArgs = theSlice[1].([]interface{})
 
-	// return db, query, queryArgs[1:], nil
+	var query string
+	query = queryArgs[0].(string)
+
+	return db, query, queryArgs[1:], nil
 }
 
 func makeArgs(query []string) []interface{} {
@@ -135,8 +148,6 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 
 		defer conn.Close()
 
-		//args := makeArgs(query)
-
 		switch message.Var {
 		case "pod.babashka.sqlite3/execute!":
 			res, err := conn.Exec(query, args...)
@@ -144,7 +155,7 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 				return nil, err
 			}
 
-			if json, err := JsonifyResult(res); err != nil {
+			if json, err := encodeResult(res); err != nil {
 				return nil, err
 			} else {
 				return json, nil
@@ -155,7 +166,7 @@ func ProcessMessage(message *babashka.Message) (interface{}, error) {
 				return nil, err
 			}
 
-			if json, err := JsonifyRows(res); err != nil {
+			if json, err := encodeRows(res); err != nil {
 				return nil, err
 			} else {
 				return json, nil
