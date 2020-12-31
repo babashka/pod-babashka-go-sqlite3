@@ -68,8 +68,7 @@ func encodeResult(result sql.Result) (ExecResult, error) {
 }
 
 func listToSlice(l *list.List) []interface{} {
-	var slice []interface{}
-	slice = make([]interface{}, l.Len())
+	slice := make([]interface{}, l.Len())
 	cnt := 0
 	for e := l.Front(); e != nil; e = e.Next() {
 		slice[cnt] = e.Value
