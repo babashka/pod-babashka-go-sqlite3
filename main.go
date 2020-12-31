@@ -66,7 +66,6 @@ func encodeResult(result sql.Result) (ExecResult, error) {
 		return nil, err
 	}
 	lastInsertedId, err := result.LastInsertId()
-
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +74,7 @@ func encodeResult(result sql.Result) (ExecResult, error) {
 		transit.Keyword("rows-affected"):    rowsAffected,
 		transit.Keyword("last-inserted-id"): lastInsertedId,
 	}
+
 	return res, nil
 }
 
@@ -168,9 +168,9 @@ func processMessage(message *babashka.Message) {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
+
 			if json, err := encodeResult(res); err != nil {
 				babashka.WriteErrorResponse(message, err)
-				return
 			} else {
 				respond(message, json)
 			}
@@ -183,17 +183,14 @@ func processMessage(message *babashka.Message) {
 
 			if json, err := encodeRows(res); err != nil {
 				babashka.WriteErrorResponse(message, err)
-				return
 			} else {
 				respond(message, json)
 			}
 		default:
 			babashka.WriteErrorResponse(message, fmt.Errorf("Unknown var %s", message.Var))
-			return
 		}
 	default:
 		babashka.WriteErrorResponse(message, fmt.Errorf("Unknown op %s", message.Op))
-		return
 	}
 }
 
