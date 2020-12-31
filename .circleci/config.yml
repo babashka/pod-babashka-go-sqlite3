@@ -40,6 +40,14 @@ jobs:
       xcode: 12.0.0
     steps:
       - checkout
+      - run:
+          name: Install Go
+          command: |
+            sudo mkdir -p /usr/local/go
+            sudo chown -R $(whoami): /usr/local/go
+            curl -sSL "https://dl.google.com/go/go1.15.6.darwin-amd64.tar.gz" | sudo tar -xz -C /usr/local/
+            echo "export PATH=$PATH:/usr/local/go/bin" >> BASH_ENV
+            sudo chown -R (whoami): /usr/local/go
       - restore_cache:
           keys:
             - pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
