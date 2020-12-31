@@ -2,7 +2,7 @@
 
 A [babashka pod](https://github.com/babashka/babashka.pods) for interacting with [sqlite3](https://www.sqlite.org/index.html).
 
-Implemented using the Go [go-sqlite3](https://github.com/mattn/go-sqlite3) library.
+Implemented using the Go [go-sqlite3](https://github.com/mattn/go-sqlite3) and [transit](https://github.com/russolsen/transit) libraries.
 
 ## Status
 
