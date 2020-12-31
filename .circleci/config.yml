@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build:
+  linux:
     docker:
       - image: circleci/golang:1.15
     steps:
@@ -10,33 +10,17 @@ jobs:
           keys:
             - pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
-          name: Build linux binary
-          environment:
-            CGO_ENABLED: 1
-          command: go build -o linux-amd64/pod-babashka-sqlite3 main.go
-      - run:
-          name: Build mac binary
-          environment:
-            GOOS: darwin
-            GOARCH: amd64
-            CGO_ENABLED: 1
-          command: go build -o macos-amd64/pod-babashka-sqlite3 main.go
-      - run:
-          name: Build windows binary
-          environment:
-            GOOS: windows
-            GOARCH: amd64
-            CGO_ENABLED: 1
-          command: go build -o windows-amd64/pod-babashka-sqlite3.exe main.go
+          name: Build binary
+          command: go build -o pod-babashka-sqlite3 main.go
       - run:
           name: Install bb for test
           command: |
-              mkdir bb
-              bash <(curl -sL https://raw.githubusercontent.com/borkdude/babashka/master/install) \
-                --dir bb --download-dir bb
+            mkdir bb
+            bash <(curl -sL https://raw.githubusercontent.com/borkdude/babashka/master/install) \
+              --dir bb --download-dir bb
       - run:
           name: Run test
-          command: cp linux-amd64/pod-babashka-sqlite3 . && PATH=$PATH:bb script/test
+          command: PATH=$PATH:bb script/test
       - save_cache:
           key: pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
           paths:
@@ -47,9 +31,41 @@ jobs:
             VERSION=$(cat resources/POD_BABASHKA_SQLITE3_VERSION)
             mkdir release
 
-            zip -j "release/pod-babashka-sqlite3-$VERSION-linux-amd64.zip" linux-amd64/pod-babashka-sqlite3
-            zip -j "release/pod-babashka-sqlite3-$VERSION-macos-amd64.zip" macos-amd64/pod-babashka-sqlite3
-            zip -j "release/pod-babashka-sqlite3-$VERSION-windows-amd64.zip" windows-amd64/pod-babashka-sqlite3.exe
+            zip "release/pod-babashka-sqlite3-$VERSION-linux-amd64.zip" pod-babashka-sqlite3
+      - store_artifacts:
+          path: release
+          destination: release
+  mac:
+    macos:
+      xcode: 12.0.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: Build binary
+          command: go build -o pod-babashka-sqlite3 main.go
+      - run:
+          name: Install bb for test
+          command: |
+            mkdir bb
+            bash <(curl -sL https://raw.githubusercontent.com/borkdude/babashka/master/install) \
+              --dir bb --download-dir bb
+      - run:
+          name: Run test
+          command: PATH=$PATH:bb script/test
+      - save_cache:
+          key: pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - "/go/pkg/mod"
+      - run:
+          name: Release
+          command: |
+            VERSION=$(cat resources/POD_BABASHKA_SQLITE3_VERSION)
+            mkdir release
+
+            zip "release/pod-babashka-sqlite3-$VERSION-macos-amd64.zip" pod-babashka-sqlite3
       - store_artifacts:
           path: release
           destination: release
@@ -58,4 +74,5 @@ workflows:
   version: 2
   ci:
     jobs:
-      - build
+      - linux
+      - mac
