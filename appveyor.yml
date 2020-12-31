@@ -11,7 +11,7 @@ environment:
   CGO_ENABLED: 1
 
 cache:
-  - 'C:/gopath/go/pkg/mod -> go.sum, appveyor.yml'
+  - 'C:/gopath/pkg/mod -> go.sum, appveyor.yml'
 
 clone_script:
 - ps: >-
