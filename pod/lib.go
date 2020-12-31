@@ -7,7 +7,6 @@ import (
 	"github.com/babashka/pod-babashka-sqlite3/babashka"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 	"github.com/russolsen/transit"
-	"os"
 	"strings"
 )
 
@@ -51,7 +50,9 @@ func encodeRows(rows *sql.Rows) ([]interface{}, error) {
 	return data, nil
 }
 
-func encodeResult(result sql.Result) (map[transit.Keyword]int64, error) {
+type ExecResult = map[transit.Keyword]int64
+
+func encodeResult(result sql.Result) (ExecResult, error) {
 	rowsAffected, err := result.RowsAffected()
 	lastInsertedId, err := result.LastInsertId()
 
@@ -59,15 +60,11 @@ func encodeResult(result sql.Result) (map[transit.Keyword]int64, error) {
 		return nil, err
 	}
 
-	res := map[transit.Keyword]int64{
-		transit.Keyword("rows-affected"): rowsAffected,
+	res := ExecResult{
+		transit.Keyword("rows-affected"):    rowsAffected,
 		transit.Keyword("last-inserted-id"): lastInsertedId,
 	}
 	return res, nil
-}
-
-func debug(v interface{}) {
-	fmt.Fprintf(os.Stderr, "debug: %+v\n", v)
 }
 
 func listToSlice(l *list.List) []interface{} {

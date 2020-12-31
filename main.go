@@ -1,18 +1,11 @@
 package main
 
 import (
-
+	"bytes"
 	"github.com/babashka/pod-babashka-sqlite3/babashka"
 	"github.com/babashka/pod-babashka-sqlite3/pod"
 	"github.com/russolsen/transit"
-	"bytes"
-	"fmt"
-	"os"
 )
-
-func debug(v interface{}) {
-	fmt.Fprintf(os.Stderr, "debug: %+v\n", v)
-}
 
 func main() {
 	for {
@@ -37,8 +30,6 @@ func main() {
 		buf := bytes.NewBufferString("")
 		encoder := transit.NewEncoder(buf, false)
 		if err := encoder.Encode(res); err != nil {
-			debug(err)
-			debug(res)
 			babashka.WriteErrorResponse(message, err)
 		} else {
 			//println("buf", buf.String())
