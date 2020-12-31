@@ -137,7 +137,7 @@ func processMessage(message *babashka.Message) {
 								Name: "execute!",
 							},
 							{
-								Name: "query!",
+								Name: "query",
 							},
 						},
 					},
@@ -168,7 +168,7 @@ func processMessage(message *babashka.Message) {
 			} else {
 				respond(message, json)
 			}
-		case "pod.babashka.sqlite3/query!":
+		case "pod.babashka.sqlite3/query":
 			res, err := conn.Query(query, args...)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)

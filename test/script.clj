@@ -3,7 +3,7 @@
 (ns script
   (:require [babashka.pods :as pods]
             [clojure.java.io :as io]
-            [clojure.test :as t :refer [deftest is]]))
+            [clojure.test :as t :refer [deftest is testing]]))
 
 (prn (pods/load-pod "./pod-babashka-sqlite3"))
 
@@ -19,18 +19,25 @@
 (prn (sqlite/execute! "/tmp/foo.db" ["insert into foo (the_text, the_int, the_real, the_blob) values (?,?,?,?)" "foo" 1 3.14 png]))
 (prn (sqlite/execute! "/tmp/foo.db" ["insert into foo (the_text, the_int, the_real) values (?,?,?)" "foo" 2 1.5]))
 
-(def results (sqlite/query! "/tmp/foo.db" ["select * from foo order by the_int desc"]))
+(testing "multiple results"
+  (prn (sqlite/execute! "/tmp/foo.db"
+                        ["insert into foo (the_text, the_int, the_real) values (?,?,?), (?,?,?)"
+                         "bar" 3 1.5
+                         "baz" 4 1.5])))
 
-(def results-min-png (update results 1 #(dissoc % :the_blob)))
-(prn results-min-png)
+(def results (sqlite/query "/tmp/foo.db" ["select * from foo order by the_int asc"]))
+
+(def results-min-png (mapv #(dissoc % :the_blob) results))
 
 (deftest results-test
-  (is (= [{:the_int 2, :the_real 1.5, :the_blob nil, :the_text "foo"}
-          {:the_int 1, :the_real 3.14, :the_text "foo"}]
+  (is (= [{:the_int 1, :the_real 3.14, :the_text "foo"}
+          {:the_int 2, :the_real 1.5, :the_text "foo"}
+          {:the_int 3, :the_real 1.5, :the_text "bar"}
+          {:the_int 4, :the_real 1.5, :the_text "baz"}]
          results-min-png)))
 
 (deftest bytes-roundtrip
-  (is (= (count png) (count (get-in results [1 :the_blob])))))
+  (is (= (count png) (count (get-in results [0 :the_blob])))))
 
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))
