@@ -49,6 +49,9 @@ See [test/script.clj](test/script.clj) for an example test script.
 
 ### HoneySQL
 
+[HoneySQL](https://github.com/seancorfield/honeysql) is a babashka-compatible
+library for turning Clojure data structures into SQL.
+
 ``` clojure
 (ns honeysql-script
   (:require [babashka.deps :as deps]
