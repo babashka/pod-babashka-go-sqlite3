@@ -11,18 +11,22 @@ jobs:
             - pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Build linux binary
+          environment:
+            CGO_ENABLED: 1
           command: go build -o linux-amd64/pod-babashka-sqlite3 main.go
       - run:
           name: Build mac binary
           environment:
             GOOS: darwin
             GOARCH: amd64
+            CGO_ENABLED: 1
           command: go build -o macos-amd64/pod-babashka-sqlite3 main.go
       - run:
           name: Build windows binary
           environment:
             GOOS: windows
             GOARCH: amd64
+            CGO_ENABLED: 1
           command: go build -o windows-amd64/pod-babashka-sqlite3.exe main.go
       - run:
           name: Install bb for test
