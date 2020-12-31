@@ -37,7 +37,7 @@ build_script:
 
     set /P VERSION=< resources\POD_BABASHKA_SQLITE3_VERSION
 
-    jar -cMf pod-babashka-sqlite3-%VERSION%-windows-amd64.zip pod-babashka-buddy.exe
+    jar -cMf pod-babashka-sqlite3-%VERSION%-windows-amd64.zip pod-babashka-sqlite3.exe
 
 artifacts:
 - path: pod-babashka-sqlite3-*-windows-amd64.zip
