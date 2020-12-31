@@ -30,6 +30,9 @@ clone_script:
 build_script:
 
 - cmd: >-
+
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+
     go build -o pod-babashka-sqlite3.exe main.go
 
     set /P VERSION=< resources\POD_BABASHKA_SQLITE3_VERSION
