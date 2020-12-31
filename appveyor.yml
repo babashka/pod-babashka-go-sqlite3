@@ -31,7 +31,7 @@ build_script:
 
 - cmd: >-
 
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+    set PATH=C:\msys64\mingw64\bin;%PATH%
 
     go build -o pod-babashka-sqlite3.exe main.go
 
