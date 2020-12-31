@@ -51,7 +51,7 @@ func encodeRows(rows *sql.Rows) ([]interface{}, error) {
 	return data, nil
 }
 
-func encodeResult(result sql.Result) (map[string]int64, error) {
+func encodeResult(result sql.Result) (map[transit.Keyword]int64, error) {
 	rowsAffected, err := result.RowsAffected()
 	lastInsertedId, err := result.LastInsertId()
 
@@ -59,9 +59,9 @@ func encodeResult(result sql.Result) (map[string]int64, error) {
 		return nil, err
 	}
 
-	res := map[string]int64{
-		"rows-affected": rowsAffected,
-		"last-inserted-id": lastInsertedId,
+	res := map[transit.Keyword]int64{
+		transit.Keyword("rows-affected"): rowsAffected,
+		transit.Keyword("last-inserted-id"): lastInsertedId,
 	}
 	return res, nil
 }
