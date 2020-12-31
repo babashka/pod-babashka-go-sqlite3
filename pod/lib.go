@@ -11,13 +11,12 @@ import (
 	"strings"
 )
 
-type ExecResult struct {
-	RowsAffected   int64 `json:"rows-affected"`
-	LastInsertedId int64 `json:"last-inserted-id"`
-}
-
 func encodeRows(rows *sql.Rows) ([]interface{}, error) {
-	columns, err := rows.Columns()
+	cols, err := rows.Columns()
+	columns := make([]transit.Keyword, len(cols))
+	for i, col := range cols {
+		columns[i] = transit.Keyword(col)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +28,7 @@ func encodeRows(rows *sql.Rows) ([]interface{}, error) {
 	}
 
 	c := 0
-	results := make(map[string]interface{})
+	results := make(map[transit.Keyword]interface{})
 	var data []interface{}
 
 	for rows.Next() {
