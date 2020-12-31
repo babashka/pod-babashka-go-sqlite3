@@ -43,7 +43,7 @@ type ErrorResponse struct {
 	Id        string   "id"
 	Status    []string "status"
 	ExMessage string   "ex-message"
-	ExData    string   "ex-data"
+	ExData    string   "ex-data,omitempty"
 }
 
 func ReadMessage() (*Message, error) {
@@ -72,7 +72,6 @@ func WriteErrorResponse(inputMessage *Message, err error) {
 		Id: inputMessage.Id,
 		Status: []string{"done", "error"},
 		ExMessage: errorMessage,
-		ExData: "{}",
 	}
 	writeResponse(errorResponse)
 }
