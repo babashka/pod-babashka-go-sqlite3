@@ -4,10 +4,10 @@ import (
 	"container/list"
 	"database/sql"
 	"fmt"
+	"strings"
 	"github.com/babashka/pod-babashka-sqlite3/babashka"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 	"github.com/russolsen/transit"
-	"strings"
 )
 
 func encodeRows(rows *sql.Rows) ([]interface{}, error) {
@@ -26,15 +26,10 @@ func encodeRows(rows *sql.Rows) ([]interface{}, error) {
 		scanArgs[i] = &values[i]
 	}
 
-	c := 0
 	results := make(map[transit.Keyword]interface{})
 	var data []interface{}
 
 	for rows.Next() {
-		if c > 0 {
-			data = append(data, ",")
-		}
-
 		if err = rows.Scan(scanArgs...); err != nil {
 			return nil, err
 		}
@@ -44,7 +39,6 @@ func encodeRows(rows *sql.Rows) ([]interface{}, error) {
 		}
 
 		data = append(data, results)
-		c++
 	}
 
 	return data, nil
