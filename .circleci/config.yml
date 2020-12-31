@@ -60,7 +60,10 @@ jobs:
               --dir bb --download-dir bb
       - run:
           name: Run test
-          command: PATH=$PATH:bb script/test
+          command: |
+            source /Users/$(whoami)/.bashrc
+
+            PATH=$PATH:bb script/test
       - save_cache:
           key: pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
           paths:
