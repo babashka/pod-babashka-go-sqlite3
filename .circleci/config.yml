@@ -48,7 +48,10 @@ jobs:
             - pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Build binary
-          command: go build -o pod-babashka-sqlite3 main.go
+          command: |
+            source /Users/$(whoami)/.bashrc
+
+            go build -o pod-babashka-sqlite3 main.go
       - run:
           name: Install bb for test
           command: |
