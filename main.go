@@ -112,34 +112,46 @@ func makeArgs(query []string) []interface{} {
 	return args
 }
 
-func processMessage(message *babashka.Message) (interface{}, error) {
+func respond(message *babashka.Message, response interface{}) {
+	buf := bytes.NewBufferString("")
+	encoder := transit.NewEncoder(buf, false)
+
+	if err := encoder.Encode(response); err != nil {
+		babashka.WriteErrorResponse(message, err)
+	} else {
+		babashka.WriteInvokeResponse(message, string(buf.String()))
+	}
+}
+
+func processMessage(message *babashka.Message) {
 	switch message.Op {
 	case "describe":
-		return &babashka.DescribeResponse{
-			Format: "transit+json",
-			Namespaces: []babashka.Namespace{
-				{
-					Name: "pod.babashka.sqlite3",
-					Vars: []babashka.Var{
-						{
-							Name: "execute!",
-						},
-						{
-							Name: "query!",
+		babashka.WriteDescribeResponse(
+			&babashka.DescribeResponse{
+				Format: "transit+json",
+				Namespaces: []babashka.Namespace{
+					{
+						Name: "pod.babashka.sqlite3",
+						Vars: []babashka.Var{
+							{
+								Name: "execute!",
+							},
+							{
+								Name: "query!",
+							},
 						},
 					},
 				},
-			},
-		}, nil
+			})
 	case "invoke":
 		db, query, args, err := parseQuery(message.Args)
 		if err != nil {
-			return nil, err
+			babashka.WriteErrorResponse(message, err)
 		}
 
 		conn, err := sql.Open("sqlite3", db)
 		if err != nil {
-			return nil, err
+			babashka.WriteErrorResponse(message, err)
 		}
 
 		defer conn.Close()
@@ -148,30 +160,30 @@ func processMessage(message *babashka.Message) (interface{}, error) {
 		case "pod.babashka.sqlite3/execute!":
 			res, err := conn.Exec(query, args...)
 			if err != nil {
-				return nil, err
+				babashka.WriteErrorResponse(message, err)
 			}
 
 			if json, err := encodeResult(res); err != nil {
-				return nil, err
+				babashka.WriteErrorResponse(message, err)
 			} else {
-				return json, nil
+				respond(message, json)
 			}
 		case "pod.babashka.sqlite3/query!":
 			res, err := conn.Query(query, args...)
 			if err != nil {
-				return nil, err
+				babashka.WriteErrorResponse(message, err)
 			}
 
 			if json, err := encodeRows(res); err != nil {
-				return nil, err
+				babashka.WriteErrorResponse(message, err)
 			} else {
-				return json, nil
+				respond(message, json)
 			}
 		default:
-			return nil, fmt.Errorf("Unknown var %s", message.Var)
+			babashka.WriteErrorResponse(message, fmt.Errorf("Unknown var %s", message.Var))
 		}
 	default:
-		return nil, fmt.Errorf("Unknown op %s", message.Op)
+		babashka.WriteErrorResponse(message, fmt.Errorf("Unknown op %s", message.Op))
 	}
 }
 
@@ -183,24 +195,6 @@ func main() {
 			continue
 		}
 
-		res, err := processMessage(message)
-		if err != nil {
-			babashka.WriteErrorResponse(message, err)
-			continue
-		}
-
-		describeRes, ok := res.(*babashka.DescribeResponse)
-		if ok {
-			babashka.WriteDescribeResponse(describeRes)
-			continue
-		}
-
-		buf := bytes.NewBufferString("")
-		encoder := transit.NewEncoder(buf, false)
-		if err := encoder.Encode(res); err != nil {
-			babashka.WriteErrorResponse(message, err)
-		} else {
-			babashka.WriteInvokeResponse(message, string(buf.String()))
-		}
+		processMessage(message)
 	}
 }
