@@ -38,6 +38,7 @@ func main() {
 		encoder := transit.NewEncoder(buf, false)
 		if err := encoder.Encode(res); err != nil {
 			debug(err)
+			debug(res)
 			babashka.WriteErrorResponse(message, err)
 		} else {
 			println("buf", buf.String())
