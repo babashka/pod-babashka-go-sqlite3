@@ -41,7 +41,7 @@ func main() {
 			debug(res)
 			babashka.WriteErrorResponse(message, err)
 		} else {
-			println("buf", buf.String())
+			//println("buf", buf.String())
 			babashka.WriteInvokeResponse(message, string(buf.String()))
 		}
 	}

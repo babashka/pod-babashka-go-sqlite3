@@ -52,7 +52,7 @@ func encodeRows(rows *sql.Rows) ([]interface{}, error) {
 	return data, nil
 }
 
-func encodeResult(result sql.Result) (*ExecResult, error) {
+func encodeResult(result sql.Result) (map[string]interface{}, error) {
 	rowsAffected, err := result.RowsAffected()
 	lastInsertedId, err := result.LastInsertId()
 
@@ -60,10 +60,10 @@ func encodeResult(result sql.Result) (*ExecResult, error) {
 		return nil, err
 	}
 
-	return &ExecResult{
-		RowsAffected:   rowsAffected,
-		LastInsertedId: lastInsertedId,
-	}, nil
+	res := make(map[string]interface{})
+	res["rows-affected"] = rowsAffected
+	res["last-inserted-id"] = lastInsertedId
+	return res, nil
 }
 
 func debug(v interface{}) {
