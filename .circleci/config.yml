@@ -50,6 +50,7 @@ jobs:
           name: Build binary
           command: |
             source /Users/$(whoami)/.bashrc # this no longer worked
+            ls -la /Users/distiller/.go
             /Users/distiller/.go/go build -o pod-babashka-go-sqlite3 main.go
       - run:
           name: Install bb for test
