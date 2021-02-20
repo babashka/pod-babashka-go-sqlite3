@@ -1,5 +1,7 @@
 github.com/babashka/pod-babashka-fswatcher v0.0.2 h1:Voo/lIO7awMwL2X7YHjpcJQa76E4WRHrN7b06OoQF3I=
 github.com/babashka/pod-babashka-fswatcher v0.0.2/go.mod h1:fsiTVpGHCNNGkz5Y3ZjwT4gzH7eu1jc6i4uFPva4HkI=
+github.com/babashka/pod-babashka-sqlite3 v0.0.1 h1:mOJXdHxjWZYJwrN2mWTzumV4zEWYfGCgRwsygyABf8c=
+github.com/babashka/pod-babashka-sqlite3 v0.0.1/go.mod h1:qidEt2qE/8AnSHRNEuVNgplXT8O/GYARrTJ098BPoqI=
 github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/google/uuid v1.0.0 h1:b4Gk+7WdP/d3HZH8EJsZpvV7EtDOgaZLtnaNGIu1adA=

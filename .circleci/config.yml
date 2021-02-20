@@ -8,10 +8,10 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
+            - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Build binary
-          command: go build -o pod-babashka-sqlite3 main.go
+          command: go build -o pod-babashka-go-sqlite3 main.go
       - run:
           name: Install bb for test
           command: |
@@ -22,16 +22,16 @@ jobs:
           name: Run test
           command: PATH=$PATH:bb script/test
       - save_cache:
-          key: pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
+          key: pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
           paths:
             - "/go/pkg/mod"
       - run:
           name: Release
           command: |
-            VERSION=$(cat resources/POD_BABASHKA_SQLITE3_VERSION)
+            VERSION=$(cat resources/POD_BABASHKA_GO_SQLITE3_VERSION)
             mkdir release
 
-            zip "release/pod-babashka-sqlite3-$VERSION-linux-amd64.zip" pod-babashka-sqlite3
+            zip "release/pod-babashka-go-sqlite3-$VERSION-linux-amd64.zip" pod-babashka-go-sqlite3
       - store_artifacts:
           path: release
           destination: release
@@ -45,13 +45,13 @@ jobs:
           command: curl -L https://git.io/vQhTU | bash
       - restore_cache:
           keys:
-            - pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
+            - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Build binary
           command: |
             source /Users/$(whoami)/.bashrc
 
-            go build -o pod-babashka-sqlite3 main.go
+            go build -o pod-babashka-go-sqlite3 main.go
       - run:
           name: Install bb for test
           command: |
@@ -62,16 +62,16 @@ jobs:
           name: Run test
           command: PATH=$PATH:bb script/test
       - save_cache:
-          key: pod-babashka-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
+          key: pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
           paths:
             - "/go/pkg/mod"
       - run:
           name: Release
           command: |
-            VERSION=$(cat resources/POD_BABASHKA_SQLITE3_VERSION)
+            VERSION=$(cat resources/POD_BABASHKA_GO_SQLITE3_VERSION)
             mkdir release
 
-            zip "release/pod-babashka-sqlite3-$VERSION-macos-amd64.zip" pod-babashka-sqlite3
+            zip "release/pod-babashka-go-sqlite3-$VERSION-macos-amd64.zip" pod-babashka-go-sqlite3
       - store_artifacts:
           path: release
           destination: release

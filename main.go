@@ -9,7 +9,7 @@ import (
 	"container/list"
 	"database/sql"
 
-	"github.com/babashka/pod-babashka-sqlite3/babashka"
+	"github.com/babashka/pod-babashka-go-sqlite3/babashka"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 	"github.com/russolsen/transit"
 )
