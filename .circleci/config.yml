@@ -53,6 +53,7 @@ jobs:
             echo $(whoami)
             cat /Users/$(whoami)/.bashrc
             ls -la /Users/distiller/.go
+            echo $PATH
             /Users/distiller/.go/bin/go build -o pod-babashka-go-sqlite3 main.go
       - run:
           name: Install bb for test
