@@ -10,7 +10,7 @@
 (require '[honeysql.core :as sql]
          '[honeysql.helpers :as helpers])
 
-(pods/load-pod "./pod-babashka-sqlite3")
+(pods/load-pod "./pod-babashka-go-sqlite3")
 
 (require '[pod.babashka.sqlite3 :as sqlite])
 
