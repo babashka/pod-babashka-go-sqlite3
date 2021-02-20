@@ -43,6 +43,7 @@ jobs:
       - run:
           name: Install Go
           command: curl -L https://git.io/vQhTU | bash
+          command: source /Users/distiller/.bashrc
       - restore_cache:
           keys:
             - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
