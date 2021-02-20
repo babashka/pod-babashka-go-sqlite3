@@ -49,11 +49,7 @@ jobs:
       - run:
           name: Build binary
           command: |
-            source /Users/$(whoami)/.bashrc # this no longer worked
-            echo $(whoami)
-            cat /Users/$(whoami)/.bashrc
-            ls -la /Users/distiller/.go
-            echo $PATH
+            source /Users/$(whoami)/.bashrc
             go build -o pod-babashka-go-sqlite3 main.go
       - run:
           name: Install bb for test
@@ -63,7 +59,9 @@ jobs:
               --dir bb --download-dir bb
       - run:
           name: Run test
-          command: PATH=$PATH:bb:/Users/distiller/.go/bin script/test
+          command: |
+            source /Users/$(whoami)/.bashrc
+            PATH=$PATH:bb script/test
       - save_cache:
           key: pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
           paths:
