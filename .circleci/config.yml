@@ -43,9 +43,9 @@ jobs:
       - run:
           name: Install Go
           command: curl -L https://git.io/vQhTU | bash
-      - restore_cache:
-          keys:
-            - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
+      # - restore_cache:
+      #     keys:
+      #       - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Build binary
           command: |
@@ -62,10 +62,10 @@ jobs:
           command: |
             source /Users/$(whoami)/.bashrc
             PATH=$PATH:bb script/test
-      - save_cache:
-          key: pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
-          paths:
-            - "/go/pkg/mod"
+      # - save_cache:
+      #     key: pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
+      #     paths:
+      #       - "/go/pkg/mod"
       - run:
           name: Release
           command: |
