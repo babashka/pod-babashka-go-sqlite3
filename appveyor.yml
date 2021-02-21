@@ -35,7 +35,7 @@ build_script:
 
     go build -o pod-babashka-go-sqlite3.exe main.go
 
-    set /P VERSION=< resources\POD_BABASHKA_SQLITE3_VERSION
+    set /P VERSION=< resources\POD_BABASHKA_GO_SQLITE3_VERSION
 
     jar -cMf pod-babashka-go-sqlite3-%VERSION%-windows-amd64.zip pod-babashka-go-sqlite3.exe
 
