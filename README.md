@@ -1,4 +1,4 @@
-# pod-babashka-sqlite3
+# pod-babashka-go-sqlite3
 
 A [babashka pod](https://github.com/babashka/babashka.pods) for interacting with [sqlite3](https://www.sqlite.org/index.html).
 
@@ -99,7 +99,7 @@ See [test/honeysql.clj](test/honeysql.clj) for a HoneySQL example script.
 
 - [Go](https://golang.org/dl/) 1.15+ should be installed.
 - Clone this repo.
-- Run `go build -o pod-babashka-sqlite3 main.go` to compile the binary.
+- Run `go build -o pod-babashka-go-sqlite3 main.go` to compile the binary.
 
 ## License
 

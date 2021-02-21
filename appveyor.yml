@@ -33,12 +33,12 @@ build_script:
 
     set PATH=C:\msys64\mingw64\bin;%PATH%
 
-    go build -o pod-babashka-sqlite3.exe main.go
+    go build -o pod-babashka-go-sqlite3.exe main.go
 
     set /P VERSION=< resources\POD_BABASHKA_SQLITE3_VERSION
 
-    jar -cMf pod-babashka-sqlite3-%VERSION%-windows-amd64.zip pod-babashka-sqlite3.exe
+    jar -cMf pod-babashka-go-sqlite3-%VERSION%-windows-amd64.zip pod-babashka-go-sqlite3.exe
 
 artifacts:
-- path: pod-babashka-sqlite3-*-windows-amd64.zip
-  name: pod-babashka-sqlite3
+- path: pod-babashka-go-sqlite3-*-windows-amd64.zip
+  name: pod-babashka-go-sqlite3

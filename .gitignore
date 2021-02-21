@@ -15,4 +15,4 @@
 # vendor/
 main
 fiddle
-pod-babashka-sqlite3
+pod-babashka-go-sqlite3

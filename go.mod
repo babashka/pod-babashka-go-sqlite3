@@ -1,4 +1,4 @@
-module github.com/babashka/pod-babashka-sqlite3
+module github.com/babashka/pod-babashka-go-sqlite3
 
 go 1.15
 
