@@ -134,7 +134,7 @@ func processMessage(message *babashka.Message) {
 				Format: "transit+json",
 				Namespaces: []babashka.Namespace{
 					{
-						Name: "pod.babashka.sqlite3",
+						Name: "pod.babashka.go-sqlite3",
 						Vars: []babashka.Var{
 							{
 								Name: "execute!",
@@ -162,7 +162,7 @@ func processMessage(message *babashka.Message) {
 		defer conn.Close()
 
 		switch message.Var {
-		case "pod.babashka.sqlite3/execute!":
+		case "pod.babashka.go-sqlite3/execute!":
 			res, err := conn.Exec(query, args...)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
@@ -174,7 +174,7 @@ func processMessage(message *babashka.Message) {
 			} else {
 				respond(message, json)
 			}
-		case "pod.babashka.sqlite3/query":
+		case "pod.babashka.go-sqlite3/query":
 			res, err := conn.Query(query, args...)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)

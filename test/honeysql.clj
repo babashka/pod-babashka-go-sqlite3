@@ -12,7 +12,7 @@
 
 (pods/load-pod "./pod-babashka-go-sqlite3")
 
-(require '[pod.babashka.sqlite3 :as sqlite])
+(require '[pod.babashka.go-sqlite3 :as sqlite])
 
 (.delete (io/file "/tmp/foo.db"))
 
