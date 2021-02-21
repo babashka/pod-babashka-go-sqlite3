@@ -10,14 +10,14 @@ Experimental.
 
 ## Usage
 
-Load the pod and `pod.babashka.sqlite3` namespace:
+Load the pod and `pod.babashka.go-sqlite3` namespace:
 
 ``` clojure
 (ns sqlite3-script
   (:require [babashka.pods :as pods]))
 
-(pods/load-pod 'org.babashka/sqlite3 "0.0.1")
-(require '[pod.babashka.sqlite3 :as sqlite])
+(pods/load-pod 'org.babashka/go-sqlite3 "0.0.1")
+(require '[pod.babashka.go-sqlite3 :as sqlite])
 ```
 
 The namespace exposes two functions: `execute!` and `query`. Both accept a path
@@ -63,8 +63,8 @@ library for turning Clojure data structures into SQL.
 (require '[honeysql.core :as sql]
          '[honeysql.helpers :as helpers])
 
-(pods/load-pod 'org.babashka/sqlite3 "0.0.1")
-(require '[pod.babashka.sqlite3 :as sqlite])
+(pods/load-pod 'org.babashka/go-sqlite3 "0.0.1")
+(require '[pod.babashka.go-sqlite3 :as sqlite])
 
 (sqlite/execute! "/tmp/foo.db" ["create table if not exists foo (col1 TEXT, col2 TEXT)"])
 
@@ -103,6 +103,6 @@ See [test/honeysql.clj](test/honeysql.clj) for a HoneySQL example script.
 
 ## License
 
-Copyright © 2020 Michiel Borkent and Rahul De
+Copyright © 2020-2021 Michiel Borkent and Rahul De
 
 License: [BSD 3-Clause](https://opensource.org/licenses/BSD-3-Clause)
