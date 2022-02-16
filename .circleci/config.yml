@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   linux:
     docker:
-      - image: circleci/golang:1.15
+      - image: cimg/go:1.17
     steps:
       - checkout
       - restore_cache:
