@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -99,10 +100,15 @@ func parseQuery(args string) (string, string, []interface{}, error) {
 
 	argSlice := listToSlice(value.(*list.List))
 	db := argSlice[0].(string)
-	queryArgs := argSlice[1].([]interface{})
-	query := queryArgs[0].(string)
 
-	return db, query, queryArgs[1:], nil
+	switch queryArgs := argSlice[1].(type) {
+	case string:
+		return db, queryArgs, make([]interface{}, 0), nil
+	case []interface{}:
+		return db, queryArgs[0].(string), queryArgs[1:], nil
+	default:
+		return "", "", nil, errors.New("unexpected query type, expected a string or a vector")
+	}
 }
 
 func makeArgs(query []string) []interface{} {

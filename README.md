@@ -45,6 +45,13 @@ to the sqlite database and a query vector:
 (= (count png) (count (:the_blob row)))
 ```
 
+Additionally, unparameterised queries are supported if a string is passed
+```clojure
+(sqlite/query "/tmp/foo.db" "select * from foo")
+```
+
+Passing any other kind of data apart from a string or a vector will throw.
+
 See [test/script.clj](test/script.clj) for an example test script.
 
 ### HoneySQL

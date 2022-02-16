@@ -29,12 +29,20 @@
 
 (def results-min-png (mapv #(dissoc % :the_blob) results))
 
+(def expected [{:the_int 1, :the_real 3.14, :the_text "foo"}
+               {:the_int 2, :the_real 1.5, :the_text "foo"}
+               {:the_int 3, :the_real 1.5, :the_text "bar"}
+               {:the_int 4, :the_real 1.5, :the_text "baz"}])
+
 (deftest results-test
-  (is (= [{:the_int 1, :the_real 3.14, :the_text "foo"}
-          {:the_int 2, :the_real 1.5, :the_text "foo"}
-          {:the_int 3, :the_real 1.5, :the_text "bar"}
-          {:the_int 4, :the_real 1.5, :the_text "baz"}]
-         results-min-png)))
+  (is (= expected results-min-png)))
+
+(def direct-results (sqlite/query "/tmp/foo.db" "select * from foo order by the_int asc"))
+
+(def direct-results-min-png (mapv #(dissoc % :the_blob) direct-results))
+
+(deftest direct-results-test
+  (is (= expected direct-results-min-png)))
 
 (deftest bytes-roundtrip
   (is (= (count png) (count (get-in results [0 :the_blob])))))
@@ -42,7 +50,10 @@
 (deftest error-test
   (is (thrown-with-msg?
        Exception #"no such column: non_existing"
-       (sqlite/query "/tmp/foo.db" ["select non_existing from foo"]))))
+       (sqlite/query "/tmp/foo.db" ["select non_existing from foo"])))
+  (is (thrown-with-msg?
+       Exception #"unexpected query type, expected a string or a vector"
+       (sqlite/query "/tmp/foo.db" 42))))
 
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))
