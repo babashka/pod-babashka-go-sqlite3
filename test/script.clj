@@ -42,7 +42,10 @@
 (deftest error-test
   (is (thrown-with-msg?
        Exception #"no such column: non_existing"
-       (sqlite/query "/tmp/foo.db" ["select non_existing from foo"]))))
+       (sqlite/query "/tmp/foo.db" ["select non_existing from foo"])))
+  (is (thrown-with-msg?
+       Exception #"expected query to be a vector"
+       (sqlite/query "/tmp/foo.db" "select * from foo"))))
 
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))

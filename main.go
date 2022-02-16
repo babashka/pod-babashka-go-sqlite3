@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -99,7 +100,12 @@ func parseQuery(args string) (string, string, []interface{}, error) {
 
 	argSlice := listToSlice(value.(*list.List))
 	db := argSlice[0].(string)
-	queryArgs := argSlice[1].([]interface{})
+
+	queryArgs, ok := argSlice[1].([]interface{})
+	if !ok {
+		return "", "", nil, errors.New("expected query to be a vector")
+	}
+
 	query := queryArgs[0].(string)
 
 	return db, query, queryArgs[1:], nil
