@@ -4,10 +4,6 @@ A [babashka pod](https://github.com/babashka/babashka.pods) for interacting with
 
 Implemented using the Go [go-sqlite3](https://github.com/mattn/go-sqlite3) and [transit](https://github.com/russolsen/transit) libraries.
 
-## Status
-
-Experimental.
-
 ## Usage
 
 Load the pod and `pod.babashka.go-sqlite3` namespace:
