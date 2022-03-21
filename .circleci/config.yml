@@ -124,4 +124,5 @@ workflows:
   ci:
     jobs:
       - linux
+      - linux-aarch64
       - mac
