@@ -73,7 +73,7 @@ jobs:
             VERSION=$(cat resources/POD_BABASHKA_GO_SQLITE3_VERSION)
             mkdir release
 
-            zip "release/pod-babashka-go-sqlite3-$VERSION-linux-arm64.zip" pod-babashka-go-sqlite3
+            zip "release/pod-babashka-go-sqlite3-$VERSION-linux-aarch64.zip" pod-babashka-go-sqlite3
       - store_artifacts:
           path: release
           destination: release
