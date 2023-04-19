@@ -79,7 +79,7 @@ jobs:
           destination: release
   mac:
     macos:
-      xcode: 12.0.0
+      xcode: 14.0.0
     steps:
       - checkout
       - run:
