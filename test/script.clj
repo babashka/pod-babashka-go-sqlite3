@@ -53,7 +53,10 @@
        (sqlite/query "/tmp/foo.db" ["select non_existing from foo"])))
   (is (thrown-with-msg?
        Exception #"unexpected query type, expected a string or a vector"
-       (sqlite/query "/tmp/foo.db" 42))))
+       (sqlite/query "/tmp/foo.db" 42)))
+  (is (thrown-with-msg?
+       Exception #"the sqlite connection must be a string"
+       (sqlite/query nil "select * from foo order by the_int asc"))))
 
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))

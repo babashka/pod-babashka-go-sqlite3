@@ -99,7 +99,10 @@ func parseQuery(args string) (string, string, []interface{}, error) {
 	}
 
 	argSlice := listToSlice(value.(*list.List))
-	db := argSlice[0].(string)
+	db, ok := argSlice[0].(string)
+	if !ok {
+		return "", "", nil, errors.New("the sqlite connection must be a string")
+	}
 
 	switch queryArgs := argSlice[1].(type) {
 	case string:
