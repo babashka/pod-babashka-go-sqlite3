@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jackpal/bencode-go v1.0.0
-	github.com/mattn/go-sqlite3 v1.14.16
+	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/russolsen/ohyeah v0.0.0-20160324131710-f4938c005315 // indirect
 	github.com/russolsen/same v0.0.0-20160222130632-f089df61f51d // indirect
