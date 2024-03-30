@@ -2,13 +2,20 @@
 
 version: "v-{build}"
 
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 clone_folder: C:\projects\babashka
 
 environment:
-  GOPATH: c:\gopath
+  GOPATH: C:\gopath
   CGO_ENABLED: 1
+  GOVERSION: 119
+
+install:
+  - set GOROOT=C:\go%GOVERSION%
+  - set PATH=%GOPATH%\bin;%GOROOT%\bin;%PATH%
+  - go version
+  - go env
 
 cache:
   - 'C:/gopath/pkg/mod -> go.sum, appveyor.yml'
