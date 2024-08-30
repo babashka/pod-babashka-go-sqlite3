@@ -40,7 +40,7 @@ build_script:
 
     set PATH=C:\msys64\mingw64\bin;%PATH%
 
-    go build -o pod-babashka-go-sqlite3.exe main.go
+    go build -tags "fts5" -o pod-babashka-go-sqlite3.exe main.go
 
     set /P VERSION=< resources\POD_BABASHKA_GO_SQLITE3_VERSION
 
