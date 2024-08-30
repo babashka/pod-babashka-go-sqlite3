@@ -2,6 +2,10 @@
 
 [pod-babashka-sqlite3](https://github.com/babashka/pod-babashka-go-sqlite3): A babashka pod for interacting with sqlite3
 
+## 0.2.4
+
+- Add support for https://www.sqlite.org/fts5.html module
+
 ## 0.2.3
 
 - Upgrade go-sqlite3 to 1.14.16 (@hangyas)
