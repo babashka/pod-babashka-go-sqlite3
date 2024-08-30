@@ -63,5 +63,12 @@
        Exception #"the sqlite connection must be a string"
        (sqlite/query nil "select * from foo order by the_int asc"))))
 
+(deftest fts50-test
+  (sqlite/execute! "/tmp/foo.db" ["CREATE VIRTUAL TABLE email USING fts5(sender, title, body)"])
+  (sqlite/execute! "/tmp/foo.db" ["INSERT INTO email VALUES('foo', 'bar', 'baz')"])
+  (is (= [{:sender "foo" :title "bar" :body "baz"}]
+         (sqlite/query "/tmp/foo.db"
+                       ["SELECT * FROM email WHERE email MATCH 'baz';"]))))
+
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))
