@@ -37,7 +37,8 @@ jobs:
           destination: release
   linux-aarch64:
     machine:
-      image: ubuntu-2004:202101-01
+      enabled: true
+      image: ubuntu-2004:current
     resource_class: arm.medium
     steps:
       - checkout
