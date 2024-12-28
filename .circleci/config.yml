@@ -119,7 +119,7 @@ jobs:
           path: release
           destination: release
 
-mac-arm:
+  mac-arm:
     macos:
       xcode: 14.0.0
     steps:
