@@ -4,7 +4,7 @@
 
 ## 0.2.5
 
-- #19: Restore mac intel support
+- [#19](https://github.com/babashka/pod-babashka-go-sqlite3/issues/19): Restore mac intel support
 
 ## 0.2.4
 
