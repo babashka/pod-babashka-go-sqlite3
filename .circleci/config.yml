@@ -39,6 +39,10 @@ jobs:
     machine:
       enabled: true
       image: ubuntu-2004:current
+    environment:
+      CGO_ENABLED: "1"
+      GOOS: linux
+      GOARCH: arm64
     resource_class: arm.medium
     steps:
       - checkout
@@ -87,12 +91,9 @@ jobs:
       #       - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Build binary
-          environment:
-            CGO_ENABLED: "1"
-            GOARCH: amd64 # ALL Mac runners on Circle are now arm64
           command: |
             source /Users/$(whoami)/.bashrc
-            go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
+            GOARCH=amd64 go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
       - run:
           name: Install bb for test
           command: |
@@ -134,7 +135,7 @@ jobs:
           name: Build binary
           command: |
             source /Users/$(whoami)/.bashrc
-            go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
+            GOARCH=arm64 go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
       - run:
           name: Install bb for test
           command: |
