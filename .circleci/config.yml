@@ -37,7 +37,8 @@ jobs:
           destination: release
   linux-aarch64:
     machine:
-      image: ubuntu-2004:202101-01
+      enabled: true
+      image: ubuntu-2004:current
     resource_class: arm.medium
     steps:
       - checkout
@@ -77,7 +78,7 @@ jobs:
       - store_artifacts:
           path: release
           destination: release
-  mac:
+  mac-intel:
     macos:
       xcode: 14.0.0
     steps:
@@ -92,7 +93,7 @@ jobs:
           name: Build binary
           command: |
             source /Users/$(whoami)/.bashrc
-            go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
+            GOARCH=amd64 go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
       - run:
           name: Install bb for test
           command: |
@@ -119,10 +120,54 @@ jobs:
           path: release
           destination: release
 
+  mac-arm:
+    macos:
+      xcode: 14.0.0
+    steps:
+      - checkout
+      - run:
+          name: Install Go
+          command: curl -L https://git.io/vQhTU | bash
+      # - restore_cache:
+      #     keys:
+      #       - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: Build binary
+          command: |
+            source /Users/$(whoami)/.bashrc
+            GOARCH=arm64 go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
+      - run:
+          name: Install bb for test
+          command: |
+            mkdir bb
+            bash <(curl -sL https://raw.githubusercontent.com/borkdude/babashka/master/install) \
+              --dir bb --download-dir bb
+      - run:
+          name: Run test
+          command: |
+            source /Users/$(whoami)/.bashrc
+            PATH=$PATH:bb script/test
+      # - save_cache:
+      #     key: pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
+      #     paths:
+      #       - "/go/pkg/mod"
+      - run:
+          name: Release
+          command: |
+            VERSION=$(cat resources/POD_BABASHKA_GO_SQLITE3_VERSION)
+            mkdir release
+
+            zip "release/pod-babashka-go-sqlite3-$VERSION-macos-aarch64.zip" pod-babashka-go-sqlite3
+      - store_artifacts:
+          path: release
+          destination: release
+
+
 workflows:
   version: 2
   ci:
     jobs:
       - linux
       - linux-aarch64
-      - mac
+      - mac-intel
+      - mac-arm
