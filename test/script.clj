@@ -5,7 +5,7 @@
             [clojure.java.io :as io]
             [clojure.test :as t :refer [deftest is testing]]))
 
-(prn (pods/load-pod "./pod-babashka-go-sqlite3-test"))
+(prn (pods/load-pod "./pod-babashka-go-sqlite3"))
 
 (require '[pod.babashka.go-sqlite3 :as sqlite])
 

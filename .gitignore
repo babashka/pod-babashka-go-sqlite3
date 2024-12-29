@@ -20,3 +20,4 @@ pod-babashka-go-sqlite3
 .clj-kondo/
 .nrepl-port
 .lsp/
+pod-babashka-go-sqlite3-test
