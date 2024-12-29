@@ -2,7 +2,7 @@
 
 [pod-babashka-sqlite3](https://github.com/babashka/pod-babashka-go-sqlite3): A babashka pod for interacting with sqlite3
 
-## 0.2.6
+## 0.2.7
 
 - [#19](https://github.com/babashka/pod-babashka-go-sqlite3/issues/19): Restore mac intel support (this time for real)
 
