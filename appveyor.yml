@@ -9,7 +9,7 @@ clone_folder: C:\projects\babashka
 environment:
   GOPATH: C:\gopath
   CGO_ENABLED: 1
-  GOVERSION: 119
+  GOVERSION: 123
 
 install:
   - set GOROOT=C:\go%GOVERSION%
@@ -45,6 +45,12 @@ build_script:
     set /P VERSION=< resources\POD_BABASHKA_GO_SQLITE3_VERSION
 
     jar -cMf pod-babashka-go-sqlite3-%VERSION%-windows-amd64.zip pod-babashka-go-sqlite3.exe
+
+    powershell -Command "if (Test-Path('bb.exe')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/babashka/babashka-dev-builds/releases/download/v1.0.169-SNAPSHOT/babashka-1.0.169-SNAPSHOT-windows-amd64.zip', 'bb.zip') }"
+
+    powershell -Command "if (Test-Path('bb.exe')) { return } else { Expand-Archive bb.zip . }"
+
+    call bb test/script.clj
 
 artifacts:
 - path: pod-babashka-go-sqlite3-*-windows-amd64.zip
