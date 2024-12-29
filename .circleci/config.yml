@@ -91,9 +91,15 @@ jobs:
       #       - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Build binary
+          environment:
+            CGO_ENABLED: "1"
+            GOOS: macos
+            GOARCH: amd64
           command: |
             source /Users/$(whoami)/.bashrc
-            GOARCH=amd64 go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
+            echo $CGO_ENABLED
+            echo $GOARCH
+            go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
       - run:
           name: Install bb for test
           command: |
@@ -133,9 +139,13 @@ jobs:
       #       - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Build binary
+          environment:
+            CGO_ENABLED: "1"
+            GOOS: macos
+            GOARCH: arm64
           command: |
             source /Users/$(whoami)/.bashrc
-            GOARCH=arm64 go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
+            go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
       - run:
           name: Install bb for test
           command: |
