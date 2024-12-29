@@ -116,6 +116,10 @@ jobs:
       #     paths:
       #       - "/go/pkg/mod"
       - run:
+          name: Install Rosetta
+          command: |
+            sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+      - run:
           name: Release
           command: |
             VERSION=$(cat resources/POD_BABASHKA_GO_SQLITE3_VERSION)
