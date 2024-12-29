@@ -93,7 +93,7 @@ jobs:
           name: Build binary
           environment:
             CGO_ENABLED: "1"
-            GOOS: macos
+            GOOS: darwin
             GOARCH: amd64
           command: |
             source /Users/$(whoami)/.bashrc
@@ -141,7 +141,7 @@ jobs:
           name: Build binary
           environment:
             CGO_ENABLED: "1"
-            GOOS: macos
+            GOOS: darwin
             GOARCH: arm64
           command: |
             source /Users/$(whoami)/.bashrc
