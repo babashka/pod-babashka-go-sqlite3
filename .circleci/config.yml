@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   linux:
     docker:
-      - image: cimg/go:1.18
+      - image: cimg/go:1.23
     steps:
       - checkout
       - restore_cache:
@@ -14,7 +14,6 @@ jobs:
           environment:
             CGO_ENABLED: "1"
             GOOS: linux
-            GOVERSION: 123
             GOARCH: amd64
           command: go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
       - run:
@@ -57,7 +56,6 @@ jobs:
           name: Build binary
           environment:
             CGO_ENABLED: "1"
-            GOVERSION: 123
             GOOS: linux
             GOARCH: arm64
           command: go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
@@ -101,7 +99,6 @@ jobs:
             CGO_ENABLED: "1"
             GOOS: darwin
             GOARCH: amd64
-            GOVERSION: 123
           command: |
             source /Users/$(whoami)/.bashrc
             echo $CGO_ENABLED
@@ -154,7 +151,6 @@ jobs:
             CGO_ENABLED: "1"
             GOOS: darwin
             GOARCH: arm64
-            GOVERSION: 123
           command: |
             source /Users/$(whoami)/.bashrc
             go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
