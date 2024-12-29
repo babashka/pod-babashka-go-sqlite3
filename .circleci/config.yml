@@ -107,6 +107,10 @@ jobs:
             bash <(curl -sL https://raw.githubusercontent.com/borkdude/babashka/master/install) \
               --dir bb --download-dir bb
       - run:
+          name: Install Rosetta
+          command: |
+            sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+      - run:
           name: Run test
           command: |
             source /Users/$(whoami)/.bashrc
@@ -115,10 +119,6 @@ jobs:
       #     key: pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       #     paths:
       #       - "/go/pkg/mod"
-      - run:
-          name: Install Rosetta
-          command: |
-            sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license
       - run:
           name: Release
           command: |
