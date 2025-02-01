@@ -1,6 +1,6 @@
 module github.com/babashka/pod-babashka-go-sqlite3
 
-go 1.22.0
+go 1.22
 
 require (
 	github.com/jackpal/bencode-go v1.0.2
