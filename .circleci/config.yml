@@ -51,7 +51,10 @@ jobs:
             - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Install Go
-          command: curl -L https://git.io/vQhTU | bash
+          command: |
+            curl -o install_go.sh -L https://git.io/vQhTU
+            bash install_go.sh --version 1.23.5
+            rm -rf install_go.sh
       - run:
           name: Build binary
           environment:
@@ -89,7 +92,10 @@ jobs:
       - checkout
       - run:
           name: Install Go
-          command: curl -L https://git.io/vQhTU | bash
+          command: |
+            curl -o install_go.sh -L https://git.io/vQhTU
+            bash install_go.sh --version 1.23.5
+            rm -rf install_go.sh
       # - restore_cache:
       #     keys:
       #       - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
@@ -141,7 +147,10 @@ jobs:
       - checkout
       - run:
           name: Install Go
-          command: curl -L https://git.io/vQhTU | bash
+          command: |
+            curl -o install_go.sh -L https://git.io/vQhTU
+            bash install_go.sh --version 1.23.5
+            rm -rf install_go.sh
       # - restore_cache:
       #     keys:
       #       - pod-babashka-go-sqlite3-{{ checksum "go.sum" }}-{{ checksum ".circleci/config.yml" }}
