@@ -11,8 +11,8 @@ import (
 	"database/sql"
 
 	"github.com/babashka/pod-babashka-go-sqlite3/babashka"
-	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 	"github.com/russolsen/transit"
+	_ "modernc.org/sqlite"
 )
 
 func debug(v interface{}) {
@@ -162,7 +162,7 @@ func processMessage(message *babashka.Message) {
 			return
 		}
 
-		conn, err := sql.Open("sqlite3", db)
+		conn, err := sql.Open("sqlite", db)
 		if err != nil {
 			babashka.WriteErrorResponse(message, err)
 			return
