@@ -12,7 +12,7 @@ jobs:
       - run:
           name: Build binary
           environment:
-            CGO_ENABLED: "1"
+            CGO_ENABLED: "0"
             GOOS: linux
             GOARCH: amd64
           command: go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
@@ -58,7 +58,7 @@ jobs:
       - run:
           name: Build binary
           environment:
-            CGO_ENABLED: "1"
+            CGO_ENABLED: "0"
             GOOS: linux
             GOARCH: arm64
           command: go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
@@ -102,7 +102,7 @@ jobs:
       - run:
           name: Build binary
           environment:
-            CGO_ENABLED: "1"
+            CGO_ENABLED: "0"
             GOOS: darwin
             GOARCH: amd64
           command: |
@@ -157,7 +157,7 @@ jobs:
       - run:
           name: Build binary
           environment:
-            CGO_ENABLED: "1"
+            CGO_ENABLED: "0"
             GOOS: darwin
             GOARCH: arm64
           command: |
