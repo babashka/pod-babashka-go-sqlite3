@@ -4,6 +4,8 @@ A [babashka pod](https://github.com/babashka/babashka.pods) for interacting with
 
 Implemented using the Go [go-sqlite3](https://github.com/mattn/go-sqlite3) and [transit](https://github.com/russolsen/transit) libraries.
 
+The `go-sqlite3` build includes the following [features](https://pkg.go.dev/github.com/mattn/go-sqlite3#readme-features): `json1`, `fts5`
+
 ## Usage
 
 Load the pod and `pod.babashka.go-sqlite3` namespace:
@@ -102,7 +104,7 @@ See [test/honeysql.clj](test/honeysql.clj) for a HoneySQL example script.
 
 - [Go](https://golang.org/dl/) 1.15+ should be installed.
 - Clone this repo.
-- Run `go build -o pod-babashka-go-sqlite3 main.go` to compile the binary.
+- Run `go build -tags "json1 fts5" -o pod-babashka-go-sqlite3 main.go` to compile the binary.
 
 ## License
 
