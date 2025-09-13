@@ -14,7 +14,7 @@ Load the pod and `pod.babashka.go-sqlite3` namespace:
 (ns sqlite3-script
   (:require [babashka.pods :as pods]))
 
-(pods/load-pod 'org.babashka/go-sqlite3 "0.1.0")
+(pods/load-pod 'org.babashka/go-sqlite3 "0.3.9")
 (require '[pod.babashka.go-sqlite3 :as sqlite])
 ```
 
@@ -68,7 +68,7 @@ library for turning Clojure data structures into SQL.
 (require '[honeysql.core :as sql]
          '[honeysql.helpers :as helpers])
 
-(pods/load-pod 'org.babashka/go-sqlite3 "0.1.0")
+(pods/load-pod 'org.babashka/go-sqlite3 "0.3.9")
 (require '[pod.babashka.go-sqlite3 :as sqlite])
 
 (sqlite/execute! "/tmp/foo.db" ["create table if not exists foo (col1 TEXT, col2 TEXT)"])
