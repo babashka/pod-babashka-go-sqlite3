@@ -13,10 +13,13 @@ jobs:
           name: Build binary
           environment:
             CGO_ENABLED: "1"
+            CC: "musl-gcc"
             GOOS: linux
             GOARCH: amd64
           command: |
-            go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
+            sudo apt-get update
+            sudo apt-get install musl musl-tools
+            go build -tags "fts5" -ldflags '-linkmode external -extldflags "-static"' -o pod-babashka-go-sqlite3 main.go
             ldd --version
             ldd ./pod-babashka-go-sqlite3
       - run:
