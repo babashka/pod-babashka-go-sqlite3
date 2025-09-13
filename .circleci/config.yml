@@ -20,8 +20,6 @@ jobs:
             sudo apt-get update
             sudo apt-get install musl musl-tools
             go build -tags "fts5" -ldflags '-linkmode external -extldflags "-static"' -o pod-babashka-go-sqlite3 main.go
-            ldd --version
-            ldd ./pod-babashka-go-sqlite3
       - run:
           name: Install bb for test
           command: |
