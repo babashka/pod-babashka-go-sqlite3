@@ -2,6 +2,10 @@
 
 [pod-babashka-sqlite3](https://github.com/babashka/pod-babashka-go-sqlite3): A babashka pod for interacting with sqlite3
 
+## 0.3.9
+
+- [#25](https://github.com/babashka/pod-babashka-go-sqlite3/issues/25): use musl to compile linux binaries to avoid dependency on glibc
+
 ## 0.2.8
 
 - [#28](https://github.com/babashka/pod-babashka-go-sqlite3/issues/28): Enable JSON1 extension ([@arichiardi](https://github.com/arichiardi))
