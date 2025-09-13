@@ -15,7 +15,9 @@ jobs:
             CGO_ENABLED: "1"
             GOOS: linux
             GOARCH: amd64
-          command: go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
+          command: |
+            go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
+            ldd ./pod-babashka-go-sqlite3
       - run:
           name: Install bb for test
           command: |
