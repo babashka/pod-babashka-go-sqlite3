@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-# go build -tags "fts5" -o pod-babashka-go-sqlite3-test main.go
+# go build -tags "json1 fts5" -o pod-babashka-go-sqlite3-test main.go
 test/script.clj
