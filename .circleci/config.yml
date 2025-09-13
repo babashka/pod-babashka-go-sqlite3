@@ -17,6 +17,7 @@ jobs:
             GOARCH: amd64
           command: |
             go build -tags "fts5" -o pod-babashka-go-sqlite3 main.go
+            ldd --version
             ldd ./pod-babashka-go-sqlite3
       - run:
           name: Install bb for test
