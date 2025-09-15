@@ -2,9 +2,9 @@ package babashka
 
 import (
 	"bufio"
+	"os"
 	"fmt"
 	"github.com/jackpal/bencode-go"
-	"os"
 )
 
 func debug(v interface{}) {
@@ -68,15 +68,9 @@ func WriteInvokeResponse(inputMessage *Message, value string) error {
 
 func WriteErrorResponse(inputMessage *Message, err error) {
 	errorMessage := string(err.Error())
-
-	id := "error"
-	if inputMessage != nil {
-		id = inputMessage.Id
-	}
-
 	errorResponse := ErrorResponse{
-		Id:        id,
-		Status:    []string{"done", "error"},
+		Id: inputMessage.Id,
+		Status: []string{"done", "error"},
 		ExMessage: errorMessage,
 	}
 	writeResponse(errorResponse)
