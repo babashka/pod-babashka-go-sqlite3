@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -207,6 +208,10 @@ func main() {
 	for {
 		message, err := babashka.ReadMessage()
 		if err != nil {
+			if err.Error() == "EOF" {
+				log.Fatal("Unrecoverable error: EOF")
+			}
+
 			debug("Error reading message")
 			debug(err)
 
