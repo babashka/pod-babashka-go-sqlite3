@@ -207,7 +207,9 @@ func main() {
 	for {
 		message, err := babashka.ReadMessage()
 		if err != nil {
-			babashka.WriteErrorResponse(message, err)
+			debug("Error reading message")
+			debug(err)
+
 			continue
 		}
 
