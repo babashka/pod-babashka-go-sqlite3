@@ -2,6 +2,10 @@
 
 [pod-babashka-sqlite3](https://github.com/babashka/pod-babashka-go-sqlite3): A babashka pod for interacting with sqlite3
 
+## 0.3.10
+
+- Better handle parent process death by handling EOF of stdin
+
 ## 0.3.9
 
 - [#25](https://github.com/babashka/pod-babashka-go-sqlite3/issues/25): use musl to compile linux binaries to avoid dependency on glibc
