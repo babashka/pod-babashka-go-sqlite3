@@ -21,6 +21,8 @@ func debug(v interface{}) {
 }
 
 func encodeRows(rows *sql.Rows) ([]interface{}, error) {
+	defer rows.Close()
+
 	cols, err := rows.Columns()
 	columns := make([]transit.Keyword, len(cols))
 	for i, col := range cols {
