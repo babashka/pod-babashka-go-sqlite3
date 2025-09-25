@@ -2,6 +2,10 @@
 
 [pod-babashka-sqlite3](https://github.com/babashka/pod-babashka-go-sqlite3): A babashka pod for interacting with sqlite3
 
+## 0.3.11
+
+Fix potential memory leak
+
 ## 0.3.10
 
 - Better handle parent process death by handling EOF of stdin
