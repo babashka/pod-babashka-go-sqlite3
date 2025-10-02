@@ -172,6 +172,26 @@ func respond(message *babashka.Message, response interface{}) {
 	}
 }
 
+func getConn(db string, connId string) (*sql.DB, bool, error) {
+	var conn *sql.DB
+
+	if connId == "" {
+		newConn, err := sql.Open("sqlite3", db)
+		if err != nil {
+			return nil, false, err
+		}
+		conn = newConn
+		return conn, true, nil
+	} else {
+		cached, ok := syncMap.Load(connId)
+		if !ok {
+			return nil, false, fmt.Errorf("Invalid connection id: %s", connId)
+		}
+		conn = cached.(*sql.DB)
+		return conn, false, nil
+	}
+}
+
 func processMessage(message *babashka.Message) {
 	switch message.Op {
 	case "describe":
@@ -204,21 +224,13 @@ func processMessage(message *babashka.Message) {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
-			var conn *sql.DB
-
-			if connId == "" {
-				newConn, err := sql.Open("sqlite3", db)
-				if err != nil {
-					babashka.WriteErrorResponse(message, err)
-				}
-				conn = newConn
+			conn, shouldDefer, err := getConn(db, connId)
+			if (err != nil) {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			if shouldDefer {
 				defer conn.Close()
-			} else {
-				cached, ok := syncMap.Load(connId)
-				if !ok {
-					babashka.WriteErrorResponse(message, fmt.Errorf("Invalid connection id: %s", connId))
-				}
-				conn = cached.(*sql.DB);
 			}
 
 			res, err := conn.Exec(query, args...)
@@ -238,21 +250,13 @@ func processMessage(message *babashka.Message) {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
-			var conn *sql.DB
-
-			if connId == "" {
-				newConn, err := sql.Open("sqlite3", db)
-				if err != nil {
-					babashka.WriteErrorResponse(message, err)
-				}
-				conn = newConn
+			conn, shouldDefer, err := getConn(db, connId)
+			if (err != nil) {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			if shouldDefer {
 				defer conn.Close()
-			} else {
-				cached, ok := syncMap.Load(connId)
-				if !ok {
-					babashka.WriteErrorResponse(message, fmt.Errorf("Invalid connection id: %s", connId))
-				}
-				conn = cached.(*sql.DB);
 			}
 
 			res, err := conn.Query(query, args...)
