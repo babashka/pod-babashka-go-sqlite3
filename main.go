@@ -99,45 +99,47 @@ func listToSlice(l *list.List) []interface{} {
 	return slice
 }
 
-func parseQuery(args string) (*sql.DB, string, []interface{}, error) {
+func parseQuery(args string) (*sql.DB, string, string, []interface{}, error) {
 	reader := strings.NewReader(args)
 	decoder := transit.NewDecoder(reader)
 	value, err := decoder.Decode()
 	if err != nil {
-		return nil, "", nil, err
+		return nil, "", "", nil, err
 	}
 
 	argSlice := listToSlice(value.(*list.List))
 	var conn *sql.DB
+	var id string
 
 	switch first := argSlice[0].(type) {
 	case string:
 		conn, err = sql.Open("sqlite3", first)
 		if err != nil {
-			return nil, "", nil, err
+			return nil, "", "", nil, err
 		}
 	case map[interface{}]interface{}:
-		id, ok := first["connection"].(string)
+		connId, ok := first["connection"].(string)
 		if !ok {
-			return nil, "", nil, errors.New(`the "connection" key in the map must be a string`)
+			return nil, "", "", nil, errors.New(`the "connection" key in the map must be a string`)
 		}
+		id = connId
 
 		cached, ok := syncMap.Load(id)
 		if !ok {
-			return nil, "", nil, fmt.Errorf("Invalid connection id: %s", id)
+			return nil, "", "", nil, fmt.Errorf("Invalid connection id: %s", id)
 		}
 		conn = cached.(*sql.DB)
 	default:
-		return nil, "", nil, errors.New("the sqlite connection must be a string or a map with a \"connection\" key")
+		return nil, "", "", nil, errors.New("the sqlite connection must be a string or a map with a \"connection\" key")
 	}
 
 	switch queryArgs := argSlice[1].(type) {
 	case string:
-		return conn, queryArgs, make([]interface{}, 0), nil
+		return conn, id, queryArgs, make([]interface{}, 0), nil
 	case []interface{}:
-		return conn, queryArgs[0].(string), queryArgs[1:], nil
+		return conn, id, queryArgs[0].(string), queryArgs[1:], nil
 	default:
-		return nil, "", nil, errors.New("unexpected query type, expected a string or a vector")
+		return nil, "", "", nil, errors.New("unexpected query type, expected a string or a vector")
 	}
 }
 
@@ -205,12 +207,14 @@ func processMessage(message *babashka.Message) {
 
 		switch message.Var {
 		case "pod.babashka.go-sqlite3/execute!":
-			conn, query, args, err := parseQuery(message.Args)
+			conn, connId, query, args, err := parseQuery(message.Args)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
-			// TODO: how to close the non cached conn?
+			if connId == "" {
+				defer conn.Close()
+			}
 
 			res, err := conn.Exec(query, args...)
 			if err != nil {
@@ -224,12 +228,14 @@ func processMessage(message *babashka.Message) {
 				respond(message, json)
 			}
 		case "pod.babashka.go-sqlite3/query":
-			conn, query, args, err := parseQuery(message.Args)
+			conn, connId, query, args, err := parseQuery(message.Args)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
-			// TODO: how to close the non cached conn?
+			if connId == "" {
+				defer conn.Close()
+			}
 
 			res, err := conn.Query(query, args...)
 			if err != nil {
