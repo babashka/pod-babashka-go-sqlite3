@@ -207,6 +207,9 @@ func processMessage(message *babashka.Message) {
 			var conn *sql.DB
 
 			connCached, ok := syncMap.Load(db)
+			debug(db)
+			debug(connCached)
+			// TODO: in the cache of a uuid, it should restore it
 			if (!ok) {
 				newConn, err := sql.Open("sqlite3", db)
 				if err != nil {
