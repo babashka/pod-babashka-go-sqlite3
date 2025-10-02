@@ -7,14 +7,20 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
+	// "reflect"
 
 	"container/list"
 	"database/sql"
 
 	"github.com/babashka/pod-babashka-go-sqlite3/babashka"
-	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 	"github.com/babashka/transit-go"
+	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
+
+	"github.com/google/uuid"
 )
+
+var syncMap sync.Map
 
 func debug(v interface{}) {
 	fmt.Fprintf(os.Stderr, "debug: %+q\n", v)
@@ -93,28 +99,56 @@ func listToSlice(l *list.List) []interface{} {
 	return slice
 }
 
-func parseQuery(args string) (string, string, []interface{}, error) {
+func parseQuery(args string) (string, string, string, []interface{}, error) {
 	reader := strings.NewReader(args)
 	decoder := transit.NewDecoder(reader)
 	value, err := decoder.Decode()
 	if err != nil {
-		return "", "", nil, err
+		return "", "", "", nil, err
+	}
+
+	argSlice := listToSlice(value.(*list.List))
+	var id string
+	var db string
+
+	switch first := argSlice[0].(type) {
+	case string:
+		db = first
+	case map[interface{}]interface{}:
+		connId, ok := first["connection"].(string)
+		if !ok {
+			return "", "", "", nil, errors.New(`the "connection" key in the map must be a string`)
+		}
+		id = connId
+
+	default:
+		return "", "", "", nil, errors.New("the sqlite connection must be a string or a map with a \"connection\" key")
+	}
+
+	switch queryArgs := argSlice[1].(type) {
+	case string:
+		return db, id, queryArgs, make([]interface{}, 0), nil
+	case []interface{}:
+		return db, id, queryArgs[0].(string), queryArgs[1:], nil
+	default:
+		return "", "", "", nil, errors.New("unexpected query type, expected a string or a vector")
+	}
+}
+
+func parseGetConnectionArgs(args string) (string, error) {
+	reader := strings.NewReader(args)
+	decoder := transit.NewDecoder(reader)
+	value, err := decoder.Decode()
+	if err != nil {
+		return "", err
 	}
 
 	argSlice := listToSlice(value.(*list.List))
 	db, ok := argSlice[0].(string)
 	if !ok {
-		return "", "", nil, errors.New("the sqlite connection must be a string")
+		return "", errors.New("the sqlite connection must be a string")
 	}
-
-	switch queryArgs := argSlice[1].(type) {
-	case string:
-		return db, queryArgs, make([]interface{}, 0), nil
-	case []interface{}:
-		return db, queryArgs[0].(string), queryArgs[1:], nil
-	default:
-		return "", "", nil, errors.New("unexpected query type, expected a string or a vector")
-	}
+	return db, nil
 }
 
 func makeArgs(query []string) []interface{} {
@@ -138,6 +172,26 @@ func respond(message *babashka.Message, response interface{}) {
 	}
 }
 
+func getConn(db string, connId string) (*sql.DB, bool, error) {
+	var conn *sql.DB
+
+	if connId == "" {
+		newConn, err := sql.Open("sqlite3", db)
+		if err != nil {
+			return nil, false, err
+		}
+		conn = newConn
+		return conn, true, nil
+	} else {
+		cached, ok := syncMap.Load(connId)
+		if !ok {
+			return nil, false, fmt.Errorf("Invalid connection id: %s", connId)
+		}
+		conn = cached.(*sql.DB)
+		return conn, false, nil
+	}
+}
+
 func processMessage(message *babashka.Message) {
 	switch message.Op {
 	case "describe":
@@ -154,27 +208,31 @@ func processMessage(message *babashka.Message) {
 							{
 								Name: "query",
 							},
+							{
+								Name: "get-connection",
+							},
 						},
 					},
 				},
 			})
 	case "invoke":
-		db, query, args, err := parseQuery(message.Args)
-		if err != nil {
-			babashka.WriteErrorResponse(message, err)
-			return
-		}
-
-		conn, err := sql.Open("sqlite3", db)
-		if err != nil {
-			babashka.WriteErrorResponse(message, err)
-			return
-		}
-
-		defer conn.Close()
 
 		switch message.Var {
 		case "pod.babashka.go-sqlite3/execute!":
+			db, connId, query, args, err := parseQuery(message.Args)
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			conn, shouldDefer, err := getConn(db, connId)
+			if (err != nil) {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			if shouldDefer {
+				defer conn.Close()
+			}
+
 			res, err := conn.Exec(query, args...)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
@@ -187,6 +245,20 @@ func processMessage(message *babashka.Message) {
 				respond(message, json)
 			}
 		case "pod.babashka.go-sqlite3/query":
+			db, connId, query, args, err := parseQuery(message.Args)
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			conn, shouldDefer, err := getConn(db, connId)
+			if (err != nil) {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			if shouldDefer {
+				defer conn.Close()
+			}
+
 			res, err := conn.Query(query, args...)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
@@ -198,6 +270,22 @@ func processMessage(message *babashka.Message) {
 			} else {
 				respond(message, json)
 			}
+		case "pod.babashka.go-sqlite3/get-connection":
+			db, err := parseGetConnectionArgs(message.Args)
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			id := uuid.New().String()
+			result := map[string]interface{}{"connection": id}
+			conn, err := sql.Open("sqlite3", db)
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+
+			syncMap.Store(id, conn)
+			respond(message, result)
 		default:
 			babashka.WriteErrorResponse(message, fmt.Errorf("Unknown var %s", message.Var))
 		}

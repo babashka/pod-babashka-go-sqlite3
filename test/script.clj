@@ -80,5 +80,13 @@
          (sqlite/query temp-file
                        ["SELECT json_extract(data, '$.name') AS name FROM users WHERE id = 1;"]))))
 
+(deftest conn-test
+  (let [conn (sqlite/get-connection temp-file)]
+    (sqlite/execute! conn ["CREATE TABLE users2 (id INTEGER PRIMARY KEY, data JSON);"])
+    (sqlite/execute! conn ["INSERT INTO users2 (id, data) VALUES (1, json('{\"name\": \"Alice\", \"age\": 25}'));"])
+    (is (= [{:name "Alice"}]
+           (sqlite/query conn
+                         ["SELECT json_extract(data, '$.name') AS name FROM users2 WHERE id = 1;"])))))
+
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))
