@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
+	// "reflect"
 
 	"container/list"
 	"database/sql"
@@ -14,7 +16,11 @@ import (
 	"github.com/babashka/pod-babashka-go-sqlite3/babashka"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 	"github.com/babashka/transit-go"
+
+	"github.com/google/uuid"
 )
+
+var syncMap sync.Map
 
 func debug(v interface{}) {
 	fmt.Fprintf(os.Stderr, "debug: %+q\n", v)
@@ -102,9 +108,20 @@ func parseQuery(args string) (string, string, []interface{}, error) {
 	}
 
 	argSlice := listToSlice(value.(*list.List))
-	db, ok := argSlice[0].(string)
-	if !ok {
-		return "", "", nil, errors.New("the sqlite connection must be a string")
+
+	var db string
+
+	switch first := argSlice[0].(type) {
+	case string:
+		db = first
+	case map[interface{}]interface{}:
+		connVal, ok := first["connection"].(string)
+		if !ok {
+			return "", "", nil, errors.New(`the "connection" key in the map must be a string`)
+		}
+		db = connVal
+	default:
+		return "", "", nil, errors.New("the sqlite connection must be a string or a map with a \"connection\" key")
 	}
 
 	switch queryArgs := argSlice[1].(type) {
@@ -115,6 +132,22 @@ func parseQuery(args string) (string, string, []interface{}, error) {
 	default:
 		return "", "", nil, errors.New("unexpected query type, expected a string or a vector")
 	}
+}
+
+func parseGetConnectionArgs(args string) (string, error) {
+	reader := strings.NewReader(args)
+	decoder := transit.NewDecoder(reader)
+	value, err := decoder.Decode()
+	if err != nil {
+		return "", err
+	}
+
+	argSlice := listToSlice(value.(*list.List))
+	db, ok := argSlice[0].(string)
+	if !ok {
+		return "", errors.New("the sqlite connection must be a string")
+	}
+	return db, nil
 }
 
 func makeArgs(query []string) []interface{} {
@@ -154,27 +187,38 @@ func processMessage(message *babashka.Message) {
 							{
 								Name: "query",
 							},
+							{
+								Name: "get-connection",
+							},
 						},
 					},
 				},
 			})
 	case "invoke":
-		db, query, args, err := parseQuery(message.Args)
-		if err != nil {
-			babashka.WriteErrorResponse(message, err)
-			return
-		}
-
-		conn, err := sql.Open("sqlite3", db)
-		if err != nil {
-			babashka.WriteErrorResponse(message, err)
-			return
-		}
-
-		defer conn.Close()
 
 		switch message.Var {
 		case "pod.babashka.go-sqlite3/execute!":
+
+			db, query, args, err := parseQuery(message.Args)
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			var conn *sql.DB
+
+			connCached, ok := syncMap.Load(db)
+			if (!ok) {
+				newConn, err := sql.Open("sqlite3", db)
+				if err != nil {
+					babashka.WriteErrorResponse(message, err)
+					return
+				}
+				conn = newConn
+				defer conn.Close()
+			} else {
+				conn = connCached.(*sql.DB)
+			}
+
 			res, err := conn.Exec(query, args...)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
@@ -187,6 +231,20 @@ func processMessage(message *babashka.Message) {
 				respond(message, json)
 			}
 		case "pod.babashka.go-sqlite3/query":
+			db, query, args, err := parseQuery(message.Args)
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+
+			conn, err := sql.Open("sqlite3", db)
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+
+			defer conn.Close()
+
 			res, err := conn.Query(query, args...)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
@@ -198,6 +256,22 @@ func processMessage(message *babashka.Message) {
 			} else {
 				respond(message, json)
 			}
+		case "pod.babashka.go-sqlite3/get-connection":
+			db, err := parseGetConnectionArgs(message.Args)
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			id := uuid.New()
+			result := make(map[string]interface{})
+			result["connection"] = id.String()
+			conn, err := sql.Open("sqlite3", db)
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			syncMap.Store(id, conn)
+			respond(message, result)
 		default:
 			babashka.WriteErrorResponse(message, fmt.Errorf("Unknown var %s", message.Var))
 		}
