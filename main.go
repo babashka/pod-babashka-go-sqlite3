@@ -14,8 +14,8 @@ import (
 	"database/sql"
 
 	"github.com/babashka/pod-babashka-go-sqlite3/babashka"
-	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 	"github.com/babashka/transit-go"
+	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 
 	"github.com/google/uuid"
 )
@@ -99,38 +99,45 @@ func listToSlice(l *list.List) []interface{} {
 	return slice
 }
 
-func parseQuery(args string) (string, string, []interface{}, error) {
+func parseQuery(args string) (*sql.DB, string, []interface{}, error) {
 	reader := strings.NewReader(args)
 	decoder := transit.NewDecoder(reader)
 	value, err := decoder.Decode()
 	if err != nil {
-		return "", "", nil, err
+		return nil, "", nil, err
 	}
 
 	argSlice := listToSlice(value.(*list.List))
-
-	var db string
+	var conn *sql.DB
 
 	switch first := argSlice[0].(type) {
 	case string:
-		db = first
-	case map[interface{}]interface{}:
-		connVal, ok := first["connection"].(string)
-		if !ok {
-			return "", "", nil, errors.New(`the "connection" key in the map must be a string`)
+		conn, err = sql.Open("sqlite3", first)
+		if err != nil {
+			return nil, "", nil, err
 		}
-		db = connVal
+	case map[interface{}]interface{}:
+		id, ok := first["connection"].(string)
+		if !ok {
+			return nil, "", nil, errors.New(`the "connection" key in the map must be a string`)
+		}
+
+		cached, ok := syncMap.Load(id)
+		if !ok {
+			return nil, "", nil, fmt.Errorf("Invalid connection id: %s", id)
+		}
+		conn = cached.(*sql.DB)
 	default:
-		return "", "", nil, errors.New("the sqlite connection must be a string or a map with a \"connection\" key")
+		return nil, "", nil, errors.New("the sqlite connection must be a string or a map with a \"connection\" key")
 	}
 
 	switch queryArgs := argSlice[1].(type) {
 	case string:
-		return db, queryArgs, make([]interface{}, 0), nil
+		return conn, queryArgs, make([]interface{}, 0), nil
 	case []interface{}:
-		return db, queryArgs[0].(string), queryArgs[1:], nil
+		return conn, queryArgs[0].(string), queryArgs[1:], nil
 	default:
-		return "", "", nil, errors.New("unexpected query type, expected a string or a vector")
+		return nil, "", nil, errors.New("unexpected query type, expected a string or a vector")
 	}
 }
 
@@ -198,29 +205,12 @@ func processMessage(message *babashka.Message) {
 
 		switch message.Var {
 		case "pod.babashka.go-sqlite3/execute!":
-
-			db, query, args, err := parseQuery(message.Args)
+			conn, query, args, err := parseQuery(message.Args)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
-			var conn *sql.DB
-
-			connCached, ok := syncMap.Load(db)
-			debug(db)
-			debug(connCached)
-			// TODO: in the cache of a uuid, it should restore it
-			if (!ok) {
-				newConn, err := sql.Open("sqlite3", db)
-				if err != nil {
-					babashka.WriteErrorResponse(message, err)
-					return
-				}
-				conn = newConn
-				defer conn.Close()
-			} else {
-				conn = connCached.(*sql.DB)
-			}
+			// TODO: how to close the non cached conn?
 
 			res, err := conn.Exec(query, args...)
 			if err != nil {
@@ -234,19 +224,12 @@ func processMessage(message *babashka.Message) {
 				respond(message, json)
 			}
 		case "pod.babashka.go-sqlite3/query":
-			db, query, args, err := parseQuery(message.Args)
+			conn, query, args, err := parseQuery(message.Args)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
-
-			conn, err := sql.Open("sqlite3", db)
-			if err != nil {
-				babashka.WriteErrorResponse(message, err)
-				return
-			}
-
-			defer conn.Close()
+			// TODO: how to close the non cached conn?
 
 			res, err := conn.Query(query, args...)
 			if err != nil {
@@ -266,13 +249,13 @@ func processMessage(message *babashka.Message) {
 				return
 			}
 			id := uuid.New().String()
-			result := make(map[string]interface{})
-			result["connection"] = id
+			result := map[string]interface{}{"connection": id}
 			conn, err := sql.Open("sqlite3", db)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
+
 			syncMap.Store(id, conn)
 			respond(message, result)
 		default:
