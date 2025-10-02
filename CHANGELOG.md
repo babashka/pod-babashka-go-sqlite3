@@ -2,6 +2,10 @@
 
 [pod-babashka-sqlite3](https://github.com/babashka/pod-babashka-go-sqlite3): A babashka pod for interacting with sqlite3
 
+## 0.3.12
+
+- Fix #38: add `get-connection` to cache connection
+
 ## 0.3.11
 
 Fix potential memory leak
