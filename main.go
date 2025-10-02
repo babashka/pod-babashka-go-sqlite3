@@ -265,9 +265,9 @@ func processMessage(message *babashka.Message) {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
-			id := uuid.New()
+			id := uuid.New().String()
 			result := make(map[string]interface{})
-			result["connection"] = id.String()
+			result["connection"] = id
 			conn, err := sql.Open("sqlite3", db)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
