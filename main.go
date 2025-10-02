@@ -99,47 +99,39 @@ func listToSlice(l *list.List) []interface{} {
 	return slice
 }
 
-func parseQuery(args string) (*sql.DB, string, string, []interface{}, error) {
+func parseQuery(args string) (string, string, string, []interface{}, error) {
 	reader := strings.NewReader(args)
 	decoder := transit.NewDecoder(reader)
 	value, err := decoder.Decode()
 	if err != nil {
-		return nil, "", "", nil, err
+		return "", "", "", nil, err
 	}
 
 	argSlice := listToSlice(value.(*list.List))
-	var conn *sql.DB
 	var id string
+	var db string
 
 	switch first := argSlice[0].(type) {
 	case string:
-		conn, err = sql.Open("sqlite3", first)
-		if err != nil {
-			return nil, "", "", nil, err
-		}
+		db = first
 	case map[interface{}]interface{}:
 		connId, ok := first["connection"].(string)
 		if !ok {
-			return nil, "", "", nil, errors.New(`the "connection" key in the map must be a string`)
+			return "", "", "", nil, errors.New(`the "connection" key in the map must be a string`)
 		}
 		id = connId
 
-		cached, ok := syncMap.Load(id)
-		if !ok {
-			return nil, "", "", nil, fmt.Errorf("Invalid connection id: %s", id)
-		}
-		conn = cached.(*sql.DB)
 	default:
-		return nil, "", "", nil, errors.New("the sqlite connection must be a string or a map with a \"connection\" key")
+		return "", "", "", nil, errors.New("the sqlite connection must be a string or a map with a \"connection\" key")
 	}
 
 	switch queryArgs := argSlice[1].(type) {
 	case string:
-		return conn, id, queryArgs, make([]interface{}, 0), nil
+		return db, id, queryArgs, make([]interface{}, 0), nil
 	case []interface{}:
-		return conn, id, queryArgs[0].(string), queryArgs[1:], nil
+		return db, id, queryArgs[0].(string), queryArgs[1:], nil
 	default:
-		return nil, "", "", nil, errors.New("unexpected query type, expected a string or a vector")
+		return "", "", "", nil, errors.New("unexpected query type, expected a string or a vector")
 	}
 }
 
@@ -207,13 +199,26 @@ func processMessage(message *babashka.Message) {
 
 		switch message.Var {
 		case "pod.babashka.go-sqlite3/execute!":
-			conn, connId, query, args, err := parseQuery(message.Args)
+			db, connId, query, args, err := parseQuery(message.Args)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
+			var conn *sql.DB
+
 			if connId == "" {
+				newConn, err := sql.Open("sqlite3", db)
+				if err != nil {
+					babashka.WriteErrorResponse(message, err)
+				}
+				conn = newConn
 				defer conn.Close()
+			} else {
+				cached, ok := syncMap.Load(connId)
+				if !ok {
+					babashka.WriteErrorResponse(message, fmt.Errorf("Invalid connection id: %s", connId))
+				}
+				conn = cached.(*sql.DB);
 			}
 
 			res, err := conn.Exec(query, args...)
@@ -228,13 +233,26 @@ func processMessage(message *babashka.Message) {
 				respond(message, json)
 			}
 		case "pod.babashka.go-sqlite3/query":
-			conn, connId, query, args, err := parseQuery(message.Args)
+			db, connId, query, args, err := parseQuery(message.Args)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
+			var conn *sql.DB
+
 			if connId == "" {
+				newConn, err := sql.Open("sqlite3", db)
+				if err != nil {
+					babashka.WriteErrorResponse(message, err)
+				}
+				conn = newConn
 				defer conn.Close()
+			} else {
+				cached, ok := syncMap.Load(connId)
+				if !ok {
+					babashka.WriteErrorResponse(message, fmt.Errorf("Invalid connection id: %s", connId))
+				}
+				conn = cached.(*sql.DB);
 			}
 
 			res, err := conn.Query(query, args...)
