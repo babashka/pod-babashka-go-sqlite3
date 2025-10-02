@@ -13,7 +13,7 @@ import (
 
 	"github.com/babashka/pod-babashka-go-sqlite3/babashka"
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
-	"github.com/russolsen/transit"
+	"github.com/babashka/transit-go"
 )
 
 func debug(v interface{}) {

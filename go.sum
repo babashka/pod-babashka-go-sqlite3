@@ -1,12 +1,10 @@
+github.com/babashka/transit-go v0.0.0-20250914122507-fb54c87ade49 h1:YH42sGRac6zKbTCnZpFlpyOO5Gc7vIqY8jpDgmOzRwk=
+github.com/babashka/transit-go v0.0.0-20250914122507-fb54c87ade49/go.mod h1:1AwoJa2ocQa+aOyzY2lnbTkPqDZ92xVJ/pqjicxhcQA=
 github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
-github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/jackpal/bencode-go v1.0.0 h1:lzbSPPqqSfWQnqVNe/BBY1NXdDpncArxShL10+fmFus=
 github.com/jackpal/bencode-go v1.0.0/go.mod h1:5FSBQ74yhCl5oQ+QxRPYzWMONFnxbL68/23eezsBI5c=
-github.com/mattn/go-sqlite3 v1.14.11 h1:gt+cp9c0XGqe9S/wAHTL3n/7MqY+siPWgWJgqdsFrzQ=
-github.com/mattn/go-sqlite3 v1.14.11/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
-github.com/mattn/go-sqlite3 v1.14.16 h1:yOQRA0RpS5PFz/oikGwBEqvAWhWg5ufRz4ETLjwpU1Y=
-github.com/mattn/go-sqlite3 v1.14.16/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o4kU=
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 github.com/pborman/uuid v1.2.1 h1:+ZZIw58t/ozdjRaXh/3awHfmWRbzYxJoAdNJxe/3pvw=
@@ -15,7 +13,5 @@ github.com/russolsen/ohyeah v0.0.0-20160324131710-f4938c005315 h1:H3hCXwP92pH/hS
 github.com/russolsen/ohyeah v0.0.0-20160324131710-f4938c005315/go.mod h1:ZbKa3zlLnhGF1dAeJtMSoNtM5LgFQnqzq8eYH3uYYkU=
 github.com/russolsen/same v0.0.0-20160222130632-f089df61f51d h1:A926QrjwToaPS7giC4UOBjHhdukq9l1Y15r3qkXYwCY=
 github.com/russolsen/same v0.0.0-20160222130632-f089df61f51d/go.mod h1:Cpq811GTlHevuU6BZxk3ObOdK8AY5gHu9QGmDak0DT4=
-github.com/russolsen/transit v0.0.0-20180705123435-0794b4c4505a h1:yVNJFSzkEG8smsvd9udiQcMJA0MIsFvlG7ba314cu+s=
-github.com/russolsen/transit v0.0.0-20180705123435-0794b4c4505a/go.mod h1:TPq+fcJOdGrkpZpXF4UVmFjYxH0gGqnxdgZ+OzAmvJk=
-github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5gKV8=
-github.com/shopspring/decimal v1.3.1/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
+github.com/shopspring/decimal v1.4.0 h1:bxl37RwXBklmTi0C79JfXCEBD1cqqHt0bbgBAGFp81k=
+github.com/shopspring/decimal v1.4.0/go.mod h1:gawqmDU56v4yIKSwfBSFip1HdCCXN8/+DMd9qYNcwME=
