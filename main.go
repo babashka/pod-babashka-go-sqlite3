@@ -324,6 +324,7 @@ func processMessage(message *babashka.Message) {
 				err := fmt.Errorf("invalid connection id: %s", connId)
 				babashka.WriteErrorResponse(message, err)
 			}
+			syncMap.Delete(connId)
 			conn := cached.(*sql.DB)
 			// TODO: We don't currently handle errors on close elsewhere... do we want to?
 			err = conn.Close()
@@ -331,6 +332,7 @@ func processMessage(message *babashka.Message) {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
+			respond(message, nil)
 
 		default:
 			babashka.WriteErrorResponse(message, fmt.Errorf("Unknown var %s", message.Var))
