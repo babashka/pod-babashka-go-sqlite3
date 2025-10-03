@@ -151,6 +151,30 @@ func parseGetConnectionArgs(args string) (string, error) {
 	return db, nil
 }
 
+func parseCloseConnectionArgs(args string) (string, error) {
+	reader := strings.NewReader(args)
+	decoder := transit.NewDecoder(reader)
+	value, err := decoder.Decode()
+	if err != nil {
+		return "", err
+	}
+	argSlice := listToSlice(value.(*list.List))
+	var id string
+	switch first := argSlice[0].(type) {
+	case map[interface{}]interface{}:
+		connId, ok := first["connection"].(string)
+		if !ok {
+			return "", errors.New(`the "connection" key in the map must be a string`)
+		}
+		id = connId
+
+	default:
+		return "", errors.New("the sqlite connection must be a map with a \"connection\" key")
+	}
+
+	return id, nil
+}
+
 func makeArgs(query []string) []interface{} {
 	args := make([]interface{}, len(query)-1)
 
@@ -211,6 +235,9 @@ func processMessage(message *babashka.Message) {
 							{
 								Name: "get-connection",
 							},
+							{
+								Name: "close-connection",
+							},
 						},
 					},
 				},
@@ -225,7 +252,7 @@ func processMessage(message *babashka.Message) {
 				return
 			}
 			conn, shouldDefer, err := getConn(db, connId)
-			if (err != nil) {
+			if err != nil {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
@@ -251,7 +278,7 @@ func processMessage(message *babashka.Message) {
 				return
 			}
 			conn, shouldDefer, err := getConn(db, connId)
-			if (err != nil) {
+			if err != nil {
 				babashka.WriteErrorResponse(message, err)
 				return
 			}
@@ -286,6 +313,25 @@ func processMessage(message *babashka.Message) {
 
 			syncMap.Store(id, conn)
 			respond(message, result)
+		case "pod.babashka.go-sqlite3/close-connection":
+			connId, err := parseCloseConnectionArgs(message.Args)
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+			cached, ok := syncMap.Load(connId)
+			if !ok {
+				err := fmt.Errorf("invalid connection id: %s", connId)
+				babashka.WriteErrorResponse(message, err)
+			}
+			conn := cached.(*sql.DB)
+			// TODO: We don't currently handle errors on close elsewhere... do we want to?
+			err = conn.Close()
+			if err != nil {
+				babashka.WriteErrorResponse(message, err)
+				return
+			}
+
 		default:
 			babashka.WriteErrorResponse(message, fmt.Errorf("Unknown var %s", message.Var))
 		}

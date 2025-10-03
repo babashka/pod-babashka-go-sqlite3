@@ -86,7 +86,9 @@
     (sqlite/execute! conn ["INSERT INTO users2 (id, data) VALUES (1, json('{\"name\": \"Alice\", \"age\": 25}'));"])
     (is (= [{:name "Alice"}]
            (sqlite/query conn
-                         ["SELECT json_extract(data, '$.name') AS name FROM users2 WHERE id = 1;"])))))
+                         ["SELECT json_extract(data, '$.name') AS name FROM users2 WHERE id = 1;"])))
+    (sqlite/close-connection conn)))
+
 
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))
