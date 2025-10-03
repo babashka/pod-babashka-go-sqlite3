@@ -326,7 +326,6 @@ func processMessage(message *babashka.Message) {
 			}
 			syncMap.Delete(connId)
 			conn := cached.(*sql.DB)
-			// TODO: We don't currently handle errors on close elsewhere... do we want to?
 			err = conn.Close()
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
