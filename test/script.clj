@@ -87,7 +87,8 @@
     (is (= [{:name "Alice"}]
            (sqlite/query conn
                          ["SELECT json_extract(data, '$.name') AS name FROM users2 WHERE id = 1;"])))
-    (sqlite/close-connection conn)))
+    (sqlite/close-connection conn)
+    (is (thrown? Exception (sqlite/query conn ["SELECT 1"])))))
 
 
 (let [{:keys [:fail :error]} (t/run-tests)]
