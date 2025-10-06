@@ -86,7 +86,15 @@
     (sqlite/execute! conn ["INSERT INTO users2 (id, data) VALUES (1, json('{\"name\": \"Alice\", \"age\": 25}'));"])
     (is (= [{:name "Alice"}]
            (sqlite/query conn
-                         ["SELECT json_extract(data, '$.name') AS name FROM users2 WHERE id = 1;"])))))
+                         ["SELECT json_extract(data, '$.name') AS name FROM users2 WHERE id = 1;"])))
+    (sqlite/close-connection conn)
+    (is (thrown? Exception (sqlite/query conn ["SELECT 1"])))
+    ; Check that the pod is still working
+    (let [temp-file2 (str (fs/file (fs/temp-dir) "foo2.db"))]
+      (fs/delete-if-exists temp-file2)
+      (sqlite/query temp-file2 ["SELECT 1"]))
+    ))
+
 
 (let [{:keys [:fail :error]} (t/run-tests)]
   (System/exit (+ fail error)))

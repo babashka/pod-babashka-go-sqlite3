@@ -1,0 +1,5 @@
+{:tasks
+ {build (shell "go build -tags \"json1 fts5\" -o pod-babashka-go-sqlite3 main.go")
+  test {:depends [build]
+        :task (shell "bb test/script.clj")
+        }}}
