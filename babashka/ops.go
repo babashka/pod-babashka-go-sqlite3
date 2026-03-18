@@ -3,11 +3,15 @@ package babashka
 import (
 	"bufio"
 	"fmt"
-	"github.com/jackpal/bencode-go"
 	"os"
+	"sync"
+
+	"github.com/jackpal/bencode-go"
 )
 
-func debug(v interface{}) {
+var wMutex sync.Mutex
+
+func debug(v any) {
 	fmt.Fprintf(os.Stderr, "debug: %+q\n", v)
 }
 
@@ -76,7 +80,10 @@ func WriteErrorResponse(inputMessage *Message, err error) {
 	writeResponse(errorResponse)
 }
 
-func writeResponse(response interface{}) error {
+func writeResponse(response any) error {
+	wMutex.Lock()
+	defer wMutex.Unlock()
+
 	writer := bufio.NewWriter(os.Stdout)
 	if err := bencode.Marshal(writer, response); err != nil {
 		return err
