@@ -22,11 +22,11 @@ import (
 
 var syncMap sync.Map
 
-func debug(v interface{}) {
+func debug(v any) {
 	fmt.Fprintf(os.Stderr, "debug: %+q\n", v)
 }
 
-func encodeRows(rows *sql.Rows) ([]interface{}, error) {
+func encodeRows(rows *sql.Rows) ([]any, error) {
 	defer rows.Close()
 
 	cols, err := rows.Columns()
@@ -38,16 +38,16 @@ func encodeRows(rows *sql.Rows) ([]interface{}, error) {
 		return nil, err
 	}
 
-	var data []interface{}
+	var data []any
 
-	values := make([]interface{}, len(columns))
-	scanArgs := make([]interface{}, len(values))
+	values := make([]any, len(columns))
+	scanArgs := make([]any, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
 	for rows.Next() {
-		results := make(map[transit.Keyword]interface{})
+		results := make(map[transit.Keyword]any)
 
 		if err = rows.Scan(scanArgs...); err != nil {
 			debug(err)
@@ -88,8 +88,8 @@ func encodeResult(result sql.Result) (ExecResult, error) {
 	return res, nil
 }
 
-func listToSlice(l *list.List) []interface{} {
-	slice := make([]interface{}, l.Len())
+func listToSlice(l *list.List) []any {
+	slice := make([]any, l.Len())
 	cnt := 0
 	for e := l.Front(); e != nil; e = e.Next() {
 		slice[cnt] = e.Value
@@ -99,7 +99,7 @@ func listToSlice(l *list.List) []interface{} {
 	return slice
 }
 
-func parseQuery(args string) (string, string, string, []interface{}, error) {
+func parseQuery(args string) (string, string, string, []any, error) {
 	reader := strings.NewReader(args)
 	decoder := transit.NewDecoder(reader)
 	value, err := decoder.Decode()
@@ -114,7 +114,7 @@ func parseQuery(args string) (string, string, string, []interface{}, error) {
 	switch first := argSlice[0].(type) {
 	case string:
 		db = first
-	case map[interface{}]interface{}:
+	case map[any]any:
 		connId, ok := first["connection"].(string)
 		if !ok {
 			return "", "", "", nil, errors.New(`the "connection" key in the map must be a string`)
@@ -127,8 +127,8 @@ func parseQuery(args string) (string, string, string, []interface{}, error) {
 
 	switch queryArgs := argSlice[1].(type) {
 	case string:
-		return db, id, queryArgs, make([]interface{}, 0), nil
-	case []interface{}:
+		return db, id, queryArgs, make([]any, 0), nil
+	case []any:
 		return db, id, queryArgs[0].(string), queryArgs[1:], nil
 	default:
 		return "", "", "", nil, errors.New("unexpected query type, expected a string or a vector")
@@ -161,7 +161,7 @@ func parseCloseConnectionArgs(args string) (string, error) {
 	argSlice := listToSlice(value.(*list.List))
 	var id string
 	switch first := argSlice[0].(type) {
-	case map[interface{}]interface{}:
+	case map[any]any:
 		connId, ok := first["connection"].(string)
 		if !ok {
 			return "", errors.New(`the "connection" key in the map must be a string`)
@@ -175,17 +175,7 @@ func parseCloseConnectionArgs(args string) (string, error) {
 	return id, nil
 }
 
-func makeArgs(query []string) []interface{} {
-	args := make([]interface{}, len(query)-1)
-
-	for i := range query[1:] {
-		args[i] = query[i+1]
-	}
-
-	return args
-}
-
-func respond(message *babashka.Message, response interface{}) {
+func respond(message *babashka.Message, response any) {
 	buf := bytes.NewBufferString("")
 	encoder := transit.NewEncoder(buf, false)
 
@@ -304,7 +294,7 @@ func processMessage(message *babashka.Message) {
 				return
 			}
 			id := uuid.New().String()
-			result := map[string]interface{}{"connection": id}
+			result := map[string]any{"connection": id}
 			conn, err := sql.Open("sqlite3", db)
 			if err != nil {
 				babashka.WriteErrorResponse(message, err)
@@ -355,6 +345,6 @@ func main() {
 			continue
 		}
 
-		processMessage(message)
+		go processMessage(message)
 	}
 }

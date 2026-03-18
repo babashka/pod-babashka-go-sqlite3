@@ -102,7 +102,7 @@ See [test/honeysql.clj](test/honeysql.clj) for a HoneySQL example script.
 
 ### Requirements
 
-- [Go](https://golang.org/dl/) 1.15+ should be installed.
+- [Go](https://golang.org/dl/) 1.25+ should be installed.
 - Clone this repo.
 - Run `go build -tags "json1 fts5" -o pod-babashka-go-sqlite3 main.go` to compile the binary.
 

@@ -9,7 +9,7 @@ clone_folder: C:\projects\babashka
 environment:
   GOPATH: C:\gopath
   CGO_ENABLED: 1
-  GOVERSION: 123
+  GOVERSION: 125
 
 install:
   - set GOROOT=C:\go%GOVERSION%
